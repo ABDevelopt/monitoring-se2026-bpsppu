@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dewaweb Node.js Server Dashboard</title>
+  <meta name="description" content="A premium and sleek Node.js server monitoring dashboard optimized for shared hosting environments.">
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <!-- Lucide Icons (feather-like icons) -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Neon Background Accents -->
+  <div class="bg-glow bg-glow-1"></div>
+  <div class="bg-glow bg-glow-2"></div>
+
+  <div class="container">
+    <!-- Header -->
+    <header class="dashboard-header">
+      <div class="brand">
+        <div class="logo-container">
+          <i data-lucide="server" class="logo-icon"></i>
+        </div>
+        <div class="title-area">
+          <h1>Dewaweb Node.js Dashboard</h1>
+          <p>Real-time Telemetry & Shared Hosting Diagnostics</p>
+        </div>
+      </div>
+      <div class="status-badge" id="overall-status-badge">
+        <span class="pulse-indicator"></span>
+        <span id="overall-status-text">Checking server...</span>
+      </div>
+    </header>
+
+    <!-- Main Grid -->
+    <main class="dashboard-grid">
+      <!-- Uptime Card -->
+      <section class="card stats-card" id="card-uptime">
+        <div class="card-header">
+          <i data-lucide="clock" class="card-icon icon-blue"></i>
+          <h3>System Uptime</h3>
+        </div>
+        <div class="card-content">
+          <div class="main-stat" id="stat-uptime">00:00:00</div>
+          <p class="stat-subtext" id="stat-system-uptime">System boot uptime loading...</p>
+        </div>
+      </section>
+
+      <!-- Memory Usage Card -->
+      <section class="card stats-card" id="card-memory">
+        <div class="card-header">
+          <i data-lucide="cpu" class="card-icon icon-purple"></i>
+          <h3>Memory Allocation</h3>
+        </div>
+        <div class="card-content">
+          <div class="memory-progress-container">
+            <div class="circular-progress">
+              <svg viewBox="0 0 100 100" class="progress-ring">
+                <circle cx="50" cy="50" r="40" class="progress-ring-bg" />
+                <circle cx="50" cy="50" r="40" class="progress-ring-fill" id="mem-progress-circle" />
+              </svg>
+              <div class="progress-text">
+                <span class="pct" id="stat-mem-pct">0%</span>
+                <span class="label">Used</span>
+              </div>
+            </div>
+            <div class="memory-details">
+              <div class="detail-row">
+                <span class="label">Total Memory</span>
+                <span class="val" id="stat-mem-total">0.00 GB</span>
+              </div>
+              <div class="detail-row">
+                <span class="label">Used Memory</span>
+                <span class="val" id="stat-mem-used">0.00 GB</span>
+              </div>
+              <div class="detail-row">
+                <span class="label">Free Memory</span>
+                <span class="val" id="stat-mem-free">0.00 GB</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Node Environment Card -->
+      <section class="card stats-card" id="card-environment">
+        <div class="card-header">
+          <i data-lucide="terminal" class="card-icon icon-emerald"></i>
+          <h3>Environment</h3>
+        </div>
+        <div class="card-content">
+          <div class="main-stat" id="stat-node-version">Loading...</div>
+          <div class="env-badges">
+            <span class="env-tag" id="badge-env">DEVELOPMENT</span>
+            <span class="env-tag" id="badge-passenger">LOCAL HOST</span>
+          </div>
+          <div class="spec-list">
+            <div class="spec-item">
+              <span class="spec-label">OS Platform</span>
+              <span class="spec-val" id="stat-platform">-</span>
+            </div>
+            <div class="spec-item">
+              <span class="spec-label">Architecture</span>
+              <span class="spec-val" id="stat-arch">-</span>
+            </div>
+            <div class="spec-item">
+              <span class="spec-label">CPU Cores</span>
+              <span class="spec-val" id="stat-cores">-</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Dewaweb Compatibility Card -->
+      <section class="card full-width-card" id="card-compatibility">
+        <div class="card-header">
+          <i data-lucide="shield-check" class="card-icon icon-gold"></i>
+          <h3>Dewaweb Shared Hosting Compatibility Checks</h3>
+        </div>
+        <div class="card-content">
+          <p class="section-intro">This table validates if the Node.js application is properly set up in cPanel's Phusion Passenger environment.</p>
+          <div class="checklist-grid">
+            
+            <div class="check-item">
+              <div class="check-status" id="chk-port-icon">
+                <i data-lucide="help-circle"></i>
+              </div>
+              <div class="check-details">
+                <h4>Dynamic Port Binding (`process.env.PORT`)</h4>
+                <p id="chk-port-desc">Checking if port is assigned dynamically by the Passenger server.</p>
+              </div>
+            </div>
+
+            <div class="check-item">
+              <div class="check-status" id="chk-version-icon">
+                <i data-lucide="help-circle"></i>
+              </div>
+              <div class="check-details">
+                <h4>Node.js Version Status</h4>
+                <p id="chk-version-desc">Detecting Node.js engine compatibility.</p>
+              </div>
+            </div>
+
+            <div class="check-item">
+              <div class="check-status" id="chk-env-icon">
+                <i data-lucide="help-circle"></i>
+              </div>
+              <div class="check-details">
+                <h4>Application Mode Settings</h4>
+                <p id="chk-env-desc">Detecting configuration environments from the server host.</p>
+              </div>
+            </div>
+
+            <div class="check-item">
+              <div class="check-status" id="chk-startup-icon">
+                <i data-lucide="help-circle"></i>
+              </div>
+              <div class="check-details">
+                <h4>Startup File Configurations</h4>
+                <p id="chk-startup-desc">Verifying app entry file naming structures.</p>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      <!-- API Explorer & Console -->
+      <section class="card full-width-card" id="card-api">
+        <div class="card-header justify-between">
+          <div class="flex-align">
+            <i data-lucide="database" class="card-icon icon-orange"></i>
+            <h3>JSON Live API Output</h3>
+          </div>
+          <button id="btn-refresh" class="btn btn-primary">
+            <i data-lucide="refresh-cw" class="btn-spinner"></i>
+            <span>Refresh Telemetry</span>
+          </button>
+        </div>
+        <div class="card-content">
+          <div class="console-box">
+            <div class="console-header">
+              <div class="console-dots">
+                <span class="dot red"></span>
+                <span class="dot yellow"></span>
+                <span class="dot green"></span>
+              </div>
+              <div class="console-title">GET /api/status</div>
+              <button id="btn-copy" class="btn-icon" title="Copy JSON">
+                <i data-lucide="copy"></i>
+              </button>
+            </div>
+            <pre class="console-code"><code id="raw-json-output">Loading JSON telemetry...</code></pre>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="dashboard-footer">
+      <p>Powered by Node.js & Antigravity AI Code Companion • Dedicated to Dewaweb Hosting Deployment</p>
+    </footer>
+  </div>
+
+  <!-- Client-side script -->
+  <script src="app.js"></script>
+</body>
+</html>
