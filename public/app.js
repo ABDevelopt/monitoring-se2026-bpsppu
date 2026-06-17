@@ -24,6 +24,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const archText = document.getElementById('stat-arch');
   const coresText = document.getElementById('stat-cores');
 
+  // Database Connection Card Elements
+  const dbStatusText = document.getElementById('stat-db-status');
+  const dbDescText = document.getElementById('stat-db-desc');
+  const dbHostText = document.getElementById('stat-db-host');
+  const dbNameText = document.getElementById('stat-db-name');
+  const dbUserText = document.getElementById('stat-db-user');
+
   // Compatibility Checklist Items
   const chkPortIcon = document.getElementById('chk-port-icon');
   const chkPortDesc = document.getElementById('chk-port-desc');
@@ -141,6 +148,27 @@ document.addEventListener('DOMContentLoaded', () => {
     platformText.textContent = data.system.platform.toUpperCase();
     archText.textContent = data.system.arch;
     coresText.textContent = `${data.hardware.cpus} Cores (${data.hardware.cpuModel.split(' ')[0]})`;
+
+    // Database Card Rendering
+    const db = data.database;
+    dbHostText.textContent = db.config.host || 'localhost';
+    dbNameText.textContent = db.config.database || 'Not set';
+    dbUserText.textContent = db.config.user || 'Not set';
+    
+    // Style database status text based on state
+    dbStatusText.textContent = db.status.replace('_', ' ').toUpperCase();
+    dbDescText.textContent = db.message;
+    
+    if (db.status === 'connected') {
+      dbStatusText.style.color = 'var(--accent-emerald)';
+      dbDescText.style.color = 'var(--text-secondary)';
+    } else if (db.status === 'not_configured') {
+      dbStatusText.style.color = 'var(--accent-gold)';
+      dbDescText.style.color = 'var(--text-muted)';
+    } else { // error
+      dbStatusText.style.color = 'var(--accent-red)';
+      dbDescText.style.color = 'var(--accent-red)';
+    }
 
     // 5. Diagnostics Checklist (Specifically for Dewaweb/Passenger setups)
     // 5.1 Port bound check
