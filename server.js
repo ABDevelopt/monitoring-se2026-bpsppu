@@ -26,7 +26,23 @@ const dbConfig = {
 };
 
 const pool = mysql.createPool(dbConfig);
-console.log(`📡 Database connection pool initialized for ${dbConfig.database}`);
+
+// Test DB connection on startup
+async function testDbConnection() {
+  try {
+    const conn = await pool.getConnection();
+    console.log(`✅ Database connected: ${dbConfig.host}:${dbConfig.port}/${dbConfig.database}`);
+    conn.release();
+    return true;
+  } catch (err) {
+    console.error(`❌ Database connection FAILED: ${err.code} - ${err.message}`);
+    console.error(`   Host: ${dbConfig.host}:${dbConfig.port}`);
+    console.error(`   Database: ${dbConfig.database}`);
+    console.error(`   User: ${dbConfig.user}`);
+    console.error(`   💡 Pastikan MySQL berjalan dan konfigurasi .env sudah benar.`);
+    return false;
+  }
+}
 
 // ==========================================================================
 // Middleware Functions
@@ -959,9 +975,11 @@ app.get('/api/export/excel', authenticateToken, async (req, res) => {
 });
 
 // Start Server listening
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`==================================================`);
   console.log(`🚀 Sensus Ekonomi 2026 monitoring server running on port ${PORT}`);
   console.log(`📂 Web assets serving from: ${path.join(__dirname, 'public')}`);
   console.log(`==================================================`);
+  // Test DB connection after server starts
+  await testDbConnection();
 });

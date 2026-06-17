@@ -1,74 +1,107 @@
 require('dotenv').config();
 const mysql = require('mysql2/promise');
 const bcrypt = require('bcryptjs');
+const fs = require('fs');
+const path = require('path');
 
 const dbConfig = {
   host: process.env.DB_HOST || 'localhost',
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
-  port: parseInt(process.env.DB_PORT || '3306')
+  port: parseInt(process.env.DB_PORT || '3306'),
+  multipleStatements: true
 };
 
+// ============================================================
+// Helpers
+// ============================================================
+function toUsername(name) {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, '')
+    .trim()
+    .replace(/\s+/g, '_')
+    .substring(0, 40);
+}
+
+function chunkArray(arr, size) {
+  const chunks = [];
+  for (let i = 0; i < arr.length; i += size) {
+    chunks.push(arr.slice(i, i + size));
+  }
+  return chunks;
+}
+
+// ============================================================
+// Main Setup
+// ============================================================
 async function setupDatabase() {
-  console.log('📡 Connecting to MySQL server...');
-  console.log(`Database details: Host=${dbConfig.host}, Database=${dbConfig.database}, User=${dbConfig.user}`);
+  console.log('\n📡 Menghubungkan ke MySQL server...');
+  console.log(`   Host: ${dbConfig.host}:${dbConfig.port}`);
+  console.log(`   Database: ${dbConfig.database}`);
+  console.log(`   User: ${dbConfig.user}\n`);
 
   if (!dbConfig.user || !dbConfig.database) {
-    console.error('❌ Database credentials not found in environment variables!');
+    console.error('❌ Kredensial database tidak ditemukan di .env!');
     process.exit(1);
   }
 
-  let connection;
+  let conn;
   try {
-    connection = await mysql.createConnection(dbConfig);
-    console.log('✅ Connection established.');
+    conn = await mysql.createConnection(dbConfig);
+    console.log('✅ Koneksi berhasil.\n');
   } catch (err) {
-    console.error('❌ Connection failed:', err.message);
+    console.error('❌ Koneksi gagal:', err.message);
     process.exit(1);
   }
 
   try {
-    // 1. Create tables
-    console.log('🔧 Creating table `kecamatan`...');
-    await connection.query(`
+    // ========================================================
+    // STEP 1: Buat Tabel
+    // ========================================================
+    console.log('══════════════════════════════════════════════════');
+    console.log(' STEP 1: Membuat tabel-tabel database');
+    console.log('══════════════════════════════════════════════════');
+
+    await conn.query(`
       CREATE TABLE IF NOT EXISTS kecamatan (
         id INT AUTO_INCREMENT PRIMARY KEY,
         kode_kec VARCHAR(10) UNIQUE NOT NULL,
         nama_kec VARCHAR(100) NOT NULL
       ) ENGINE=InnoDB;
     `);
+    console.log('  ✅ Tabel `kecamatan`');
 
-    console.log('🔧 Creating table `desa`...');
-    await connection.query(`
+    await conn.query(`
       CREATE TABLE IF NOT EXISTS desa (
         id INT AUTO_INCREMENT PRIMARY KEY,
-        kode_desa VARCHAR(10) UNIQUE NOT NULL,
+        id_desa VARCHAR(20) UNIQUE NOT NULL,
+        kode_desa VARCHAR(10) NOT NULL,
         nama_desa VARCHAR(100) NOT NULL,
         kecamatan_id INT NOT NULL,
         FOREIGN KEY (kecamatan_id) REFERENCES kecamatan(id) ON DELETE CASCADE
       ) ENGINE=InnoDB;
     `);
+    console.log('  ✅ Tabel `desa`');
 
-    console.log('🔧 Creating table `sls`...');
-    await connection.query(`
+    await conn.query(`
       CREATE TABLE IF NOT EXISTS sls (
         id INT AUTO_INCREMENT PRIMARY KEY,
         kode_sls VARCHAR(20) NOT NULL,
-        nama_sls VARCHAR(100) NOT NULL,
+        nama_sls VARCHAR(200) NOT NULL,
         desa_id INT NOT NULL,
         FOREIGN KEY (desa_id) REFERENCES desa(id) ON DELETE CASCADE
       ) ENGINE=InnoDB;
     `);
+    console.log('  ✅ Tabel `sls`');
 
-    console.log('🔧 Creating table `sub_sls`...');
-    await connection.query(`
+    await conn.query(`
       CREATE TABLE IF NOT EXISTS sub_sls (
         id INT AUTO_INCREMENT PRIMARY KEY,
         kode_sub_sls VARCHAR(20) NOT NULL,
         id_sub_sls VARCHAR(50) UNIQUE NOT NULL,
-        id_sub_sls_alt VARCHAR(50) NULL,
-        nama_sub_sls VARCHAR(100) NOT NULL,
+        id_sub_sls_2025 VARCHAR(50) NULL,
         nama_korlap VARCHAR(100) NULL,
         nama_pml VARCHAR(100) NULL,
         nama_pcl VARCHAR(100) NULL,
@@ -77,9 +110,9 @@ async function setupDatabase() {
         FOREIGN KEY (sls_id) REFERENCES sls(id) ON DELETE CASCADE
       ) ENGINE=InnoDB;
     `);
+    console.log('  ✅ Tabel `sub_sls`');
 
-    console.log('🔧 Creating table `user`...');
-    await connection.query(`
+    await conn.query(`
       CREATE TABLE IF NOT EXISTS user (
         id INT AUTO_INCREMENT PRIMARY KEY,
         nama_lengkap VARCHAR(100) NOT NULL,
@@ -92,9 +125,9 @@ async function setupDatabase() {
         FOREIGN KEY (kecamatan_id) REFERENCES kecamatan(id) ON DELETE SET NULL
       ) ENGINE=InnoDB;
     `);
+    console.log('  ✅ Tabel `user`');
 
-    console.log('🔧 Creating table `tugas_pcl`...');
-    await connection.query(`
+    await conn.query(`
       CREATE TABLE IF NOT EXISTS tugas_pcl (
         pcl_id INT NOT NULL,
         sub_sls_id INT NOT NULL,
@@ -103,9 +136,9 @@ async function setupDatabase() {
         FOREIGN KEY (sub_sls_id) REFERENCES sub_sls(id) ON DELETE CASCADE
       ) ENGINE=InnoDB;
     `);
+    console.log('  ✅ Tabel `tugas_pcl`');
 
-    console.log('🔧 Creating table `laporan_harian`...');
-    await connection.query(`
+    await conn.query(`
       CREATE TABLE IF NOT EXISTS laporan_harian (
         id INT AUTO_INCREMENT PRIMARY KEY,
         tanggal DATE NOT NULL,
@@ -123,9 +156,9 @@ async function setupDatabase() {
         FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE
       ) ENGINE=InnoDB;
     `);
+    console.log('  ✅ Tabel `laporan_harian`');
 
-    console.log('🔧 Creating table `target_periode`...');
-    await connection.query(`
+    await conn.query(`
       CREATE TABLE IF NOT EXISTS target_periode (
         id INT AUTO_INCREMENT PRIMARY KEY,
         target_persen DECIMAL(5,2) NOT NULL,
@@ -135,156 +168,321 @@ async function setupDatabase() {
         FOREIGN KEY (kecamatan_id) REFERENCES kecamatan(id) ON DELETE CASCADE
       ) ENGINE=InnoDB;
     `);
+    console.log('  ✅ Tabel `target_periode`\n');
 
-    // 2. Insert Seed Data
-    console.log('🌱 Checking seed data...');
-    
-    // Check if Kecamatan already has entries
-    const [rowsKec] = await connection.query('SELECT COUNT(*) AS cnt FROM kecamatan');
-    if (rowsKec[0].cnt === 0) {
-      console.log('🌱 Seeding `kecamatan`...');
-      const k1 = await connection.query("INSERT INTO kecamatan (kode_kec, nama_kec) VALUES ('3171010', 'Menteng')");
-      const k2 = await connection.query("INSERT INTO kecamatan (kode_kec, nama_kec) VALUES ('3171020', 'Senen')");
-      const k3 = await connection.query("INSERT INTO kecamatan (kode_kec, nama_kec) VALUES ('3171030', 'Cempaka Putih')");
-      
-      const mentengId = k1[0].insertId;
-      const senenId = k2[0].insertId;
-      const cempakaId = k3[0].insertId;
+    // ========================================================
+    // STEP 2: Baca & Parse JSON
+    // ========================================================
+    console.log('══════════════════════════════════════════════════');
+    console.log(' STEP 2: Membaca data dari JSON');
+    console.log('══════════════════════════════════════════════════');
 
-      console.log('🌱 Seeding `desa`...');
-      const d1 = await connection.query(`INSERT INTO desa (kode_desa, nama_desa, kecamatan_id) VALUES 
-        ('3171010001', 'Menteng', ${mentengId}),
-        ('3171010002', 'Cikini', ${mentengId}),
-        ('3171020001', 'Kwitang', ${senenId}),
-        ('3171020002', 'Kenari', ${senenId}),
-        ('3171030001', 'Cempaka Putih Barat', ${cempakaId});
-      `);
-      
-      const mentengDesaId = d1[0].insertId; // ID of first inserted (Menteng)
-      const cikiniDesaId = mentengDesaId + 1;
-      const kwitangDesaId = mentengDesaId + 2;
+    const jsonPath = path.join(__dirname, 'kelompok_populasi_pml_pcl_korlap_muatan.json');
+    const rawData = fs.readFileSync(jsonPath, 'utf-8');
+    const kecamatanList = JSON.parse(rawData);
+    console.log(`  📄 Ditemukan ${kecamatanList.length} kecamatan dalam JSON\n`);
 
-      console.log('🌱 Seeding `sls`...');
-      const s1 = await connection.query(`INSERT INTO sls (kode_sls, nama_sls, desa_id) VALUES 
-        ('001', 'RT 001 / RW 01', ${mentengDesaId}),
-        ('002', 'RT 002 / RW 01', ${mentengDesaId}),
-        ('001', 'RT 001 / RW 02', ${cikiniDesaId}),
-        ('003', 'RT 003 / RW 03', ${kwitangDesaId});
-      `);
+    // ========================================================
+    // STEP 3: Cek apakah data sudah ada
+    // ========================================================
+    const [existKec] = await conn.query('SELECT COUNT(*) AS cnt FROM kecamatan');
+    const [existSubSls] = await conn.query('SELECT COUNT(*) AS cnt FROM sub_sls');
 
-      const sls1 = s1[0].insertId;
-      const sls2 = sls1 + 1;
-      const sls3 = sls1 + 2;
-      const sls4 = sls1 + 3;
+    if (existKec[0].cnt > 0 && existSubSls[0].cnt > 0) {
+      console.log('ℹ️  Data wilayah sudah ada di database. Skip insert wilayah.');
+      console.log('   (Hapus tabel atau jalankan dengan flag --force untuk reset)\n');
+    } else {
+      // ========================================================
+      // STEP 3A: Insert Kecamatan, Desa, SLS, Sub-SLS
+      // ========================================================
+      console.log('══════════════════════════════════════════════════');
+      console.log(' STEP 3: Insert data wilayah dari JSON');
+      console.log('══════════════════════════════════════════════════');
 
-      console.log('🌱 Seeding `sub_sls`...');
-      await connection.query(`INSERT INTO sub_sls (kode_sub_sls, id_sub_sls, id_sub_sls_alt, nama_sub_sls, nama_korlap, nama_pml, nama_pcl, total_muatan, sls_id) VALUES 
-        ('01', '3171010001001-01', 'ALT-01', 'Sub-SLS A', 'Budi Korlap', 'PML Menteng', 'PCL Budi', 20, ${sls1}),
-        ('02', '3171010001001-02', 'ALT-02', 'Sub-SLS B', 'Budi Korlap', 'PML Menteng', 'PCL Iwan', 15, ${sls1}),
-        ('01', '3171010001002-01', null, 'Sub-SLS C', 'Budi Korlap', 'PML Menteng', 'PCL Budi', 0, ${sls2}),
-        ('01', '3171010002001-01', null, 'Sub-SLS D', 'Budi Korlap', 'PML Menteng', 'PCL Susi', 25, ${sls3}),
-        ('01', '3171020001003-01', 'ALT-05', 'Sub-SLS E', 'Siti Korlap', 'PML Senen', 'PCL Roni', 10, ${sls4});
-      `);
+      // Collect all unique names for user generation
+      const uniquePml = new Map();    // nama -> { kec_kode, kec_nama }
+      const uniquePcl = new Map();    // nama -> { kec_kode }
+      const uniqueKorlap = new Map(); // nama -> { kec_kode }
 
-      console.log('🌱 Seeding `target_periode`...');
-      // Targets that are active now (deadline in 7 days) and target that ended soon (deadline in 1 day)
-      const today = new Date();
-      const past3Days = new Date(today.getTime() - 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-      const future7Days = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-      const future1Day = new Date(today.getTime() + 1 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-      
-      await connection.query(`INSERT INTO target_periode (target_persen, tanggal_mulai, tanggal_selesai, kecamatan_id) VALUES 
-        (100.00, '${past3Days}', '${future7Days}', ${mentengId}),
-        (90.00, '${past3Days}', '${future1Day}', ${senenId});
-      `);
-    }
+      let totalDesa = 0, totalSls = 0, totalSubSls = 0;
 
-    // Check if Users already exist
-    const [rowsUser] = await connection.query('SELECT COUNT(*) AS cnt FROM user');
-    if (rowsUser[0].cnt === 0) {
-      console.log('🌱 Seeding `user`...');
-      const adminPass = await bcrypt.hash('adminse2026', 10);
-      const korlapPass = await bcrypt.hash('korlap123', 10);
-      const pmlPass = await bcrypt.hash('pml123', 10);
-      const pclPass1 = await bcrypt.hash('pcl123', 10);
-      const pclPass2 = await bcrypt.hash('pcl234', 10);
+      for (const kec of kecamatanList) {
+        // Insert kecamatan
+        const [kecResult] = await conn.query(
+          'INSERT IGNORE INTO kecamatan (kode_kec, nama_kec) VALUES (?, ?)',
+          [kec.kode_kec, kec.nama_kec]
+        );
 
-      const [mentengRows] = await connection.query("SELECT id FROM kecamatan WHERE nama_kec = 'Menteng' LIMIT 1");
-      const mentengKecId = mentengRows[0]?.id || null;
+        let kecId;
+        if (kecResult.insertId) {
+          kecId = kecResult.insertId;
+        } else {
+          const [kecRow] = await conn.query('SELECT id FROM kecamatan WHERE kode_kec = ?', [kec.kode_kec]);
+          kecId = kecRow[0].id;
+        }
 
-      // Insert Admin
-      await connection.query(`INSERT INTO user (nama_lengkap, username, password, role, is_active, kecamatan_id) VALUES 
-        ('Administrator Sensus', 'admin', '${adminPass}', 'admin', true, null);
-      `);
+        // Insert desa
+        for (const desa of (kec.desa || [])) {
+          totalDesa++;
+          const [desaResult] = await conn.query(
+            'INSERT IGNORE INTO desa (id_desa, kode_desa, nama_desa, kecamatan_id) VALUES (?, ?, ?, ?)',
+            [desa.id_desa, desa.kode_desa, desa.nama_desa, kecId]
+          );
 
-      // Insert Korlap
-      await connection.query(`INSERT INTO user (nama_lengkap, username, password, role, is_active, kecamatan_id) VALUES 
-        ('Hendra Korlap', 'korlap1', '${korlapPass}', 'korlap', true, null);
-      `);
+          let desaId;
+          if (desaResult.insertId) {
+            desaId = desaResult.insertId;
+          } else {
+            const [desaRow] = await conn.query('SELECT id FROM desa WHERE id_desa = ?', [desa.id_desa]);
+            desaId = desaRow[0].id;
+          }
 
-      // Insert PML (Menteng)
-      const uPml = await connection.query(`INSERT INTO user (nama_lengkap, username, password, role, is_active, kecamatan_id) VALUES 
-        ('PML Menteng', 'pml_menteng', '${pmlPass}', 'pml', true, ${mentengKecId});
-      `);
-      const pmlUserId = uPml[0].insertId;
+          // Insert SLS
+          for (const sls of (desa.sls || [])) {
+            totalSls++;
+            const [slsResult] = await conn.query(
+              'INSERT INTO sls (kode_sls, nama_sls, desa_id) VALUES (?, ?, ?)',
+              [sls.kode_sls, sls.nama_sls, desaId]
+            );
+            const slsId = slsResult.insertId;
 
-      // Insert PCLs
-      const uPcl1 = await connection.query(`INSERT INTO user (nama_lengkap, username, password, role, is_active, kecamatan_id) VALUES 
-        ('PCL Budi', 'pcl1', '${pclPass1}', 'pcl', true, null);
-      `);
-      const uPcl2 = await connection.query(`INSERT INTO user (nama_lengkap, username, password, role, is_active, kecamatan_id) VALUES 
-        ('PCL Iwan', 'pcl2', '${pclPass2}', 'pcl', true, null);
-      `);
+            // Insert Sub-SLS
+            for (const subsls of (sls.subsls || [])) {
+              totalSubSls++;
+              await conn.query(
+                `INSERT IGNORE INTO sub_sls 
+                  (kode_sub_sls, id_sub_sls, id_sub_sls_2025, nama_korlap, nama_pml, nama_pcl, total_muatan, sls_id) 
+                  VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+                [
+                  subsls.kode_subsls,
+                  subsls.id_subsls,
+                  subsls.id_subsls_2025 || null,
+                  subsls.nama_korlap || null,
+                  subsls.nama_pml || null,
+                  subsls.nama_pcl || null,
+                  subsls.total_muatan_assignment || 0,
+                  slsId
+                ]
+              );
 
-      const pcl1Id = uPcl1[0].insertId;
-      const pcl2Id = uPcl2[0].insertId;
+              // Collect unique staff names
+              if (subsls.nama_pml) {
+                if (!uniquePml.has(subsls.nama_pml)) {
+                  uniquePml.set(subsls.nama_pml, { kec_kode: kec.kode_kec, kec_nama: kec.nama_kec, kecId });
+                }
+              }
+              if (subsls.nama_pcl) {
+                if (!uniquePcl.has(subsls.nama_pcl)) {
+                  uniquePcl.set(subsls.nama_pcl, { kec_kode: kec.kode_kec, kecId });
+                }
+              }
+              if (subsls.nama_korlap) {
+                if (!uniqueKorlap.has(subsls.nama_korlap)) {
+                  uniqueKorlap.set(subsls.nama_korlap, { kec_kode: kec.kode_kec, kecId });
+                }
+              }
+            }
+          }
+        }
 
-      // Link PCL to Sub-SLS (Penugasan)
-      console.log('🌱 Seeding `tugas_pcl`...');
-      const [subSlsRows] = await connection.query('SELECT id, id_sub_sls FROM sub_sls');
-      const subSlsA = subSlsRows.find(s => s.id_sub_sls === '3171010001001-01')?.id;
-      const subSlsB = subSlsRows.find(s => s.id_sub_sls === '3171010001001-02')?.id;
-      const subSlsC = subSlsRows.find(s => s.id_sub_sls === '3171010001002-01')?.id;
-      
-      if (subSlsA && subSlsB && subSlsC) {
-        await connection.query(`INSERT INTO tugas_pcl (pcl_id, sub_sls_id) VALUES 
-          (${pcl1Id}, ${subSlsA}),
-          (${pcl1Id}, ${subSlsC}),
-          (${pcl2Id}, ${subSlsB});
-        `);
+        process.stdout.write(`  📍 Kec ${kec.kode_kec} - ${kec.nama_kec} → selesai\n`);
       }
 
-      // Seeding some initial Laporan Harian
-      console.log('🌱 Seeding `laporan_harian`...');
+      console.log(`\n  ✅ Total inserted: ${kecamatanList.length} kecamatan, ${totalDesa} desa, ${totalSls} SLS, ${totalSubSls} sub-SLS\n`);
+
+      // ========================================================
+      // STEP 4: Insert User (Admin + Korlap + PML + PCL)
+      // ========================================================
+      console.log('══════════════════════════════════════════════════');
+      console.log(' STEP 4: Membuat akun user dari data JSON');
+      console.log('══════════════════════════════════════════════════');
+
+      const [existUser] = await conn.query('SELECT COUNT(*) AS cnt FROM user');
+
+      if (existUser[0].cnt > 0) {
+        console.log('ℹ️  User sudah ada. Skip insert user.\n');
+      } else {
+        // Hash default passwords
+        const passAdmin   = await bcrypt.hash('adminse2026', 10);
+        const passKorlap  = await bcrypt.hash('korlap123', 10);
+        const passPml     = await bcrypt.hash('pml123', 10);
+        const passPcl     = await bcrypt.hash('pcl123', 10);
+
+        // Insert Admin
+        await conn.query(
+          `INSERT INTO user (nama_lengkap, username, password, role, is_active, kecamatan_id) VALUES (?, ?, ?, 'admin', true, null)`,
+          ['Administrator', 'admin', passAdmin]
+        );
+        console.log('  👤 Admin: username=admin, password=adminse2026');
+
+        // Insert Korlap (unique)
+        let korlapCount = 0;
+        const korlapUsernames = new Map();
+        for (const [nama, info] of uniqueKorlap) {
+          let base = toUsername(nama);
+          let uname = base;
+          let suffix = 2;
+          while (korlapUsernames.has(uname)) {
+            uname = `${base}_${suffix++}`;
+          }
+          korlapUsernames.set(uname, true);
+
+          const [res] = await conn.query(
+            `INSERT IGNORE INTO user (nama_lengkap, username, password, role, is_active, kecamatan_id) VALUES (?, ?, ?, 'korlap', true, ?)`,
+            [nama, uname, passKorlap, info.kecId]
+          );
+          if (res.insertId) korlapCount++;
+        }
+        console.log(`  👤 Korlap: ${korlapCount} akun dibuat (password default: korlap123)`);
+
+        // Insert PML (unique)
+        let pmlCount = 0;
+        const pmlUsernames = new Map();
+        const pmlIdByName = new Map();
+        for (const [nama, info] of uniquePml) {
+          let base = 'pml_' + toUsername(nama);
+          let uname = base;
+          let suffix = 2;
+          while (pmlUsernames.has(uname)) {
+            uname = `${base}_${suffix++}`;
+          }
+          pmlUsernames.set(uname, true);
+
+          const [res] = await conn.query(
+            `INSERT IGNORE INTO user (nama_lengkap, username, password, role, is_active, kecamatan_id) VALUES (?, ?, ?, 'pml', true, ?)`,
+            [nama, uname, passPml, info.kecId]
+          );
+          if (res.insertId) {
+            pmlCount++;
+            pmlIdByName.set(nama, res.insertId);
+          }
+        }
+        console.log(`  👤 PML: ${pmlCount} akun dibuat (password default: pml123)`);
+
+        // Insert PCL (unique)
+        let pclCount = 0;
+        const pclUsernames = new Map();
+        const pclIdByName = new Map();
+        for (const [nama, info] of uniquePcl) {
+          let base = 'pcl_' + toUsername(nama);
+          let uname = base;
+          let suffix = 2;
+          while (pclUsernames.has(uname)) {
+            uname = `${base}_${suffix++}`;
+          }
+          pclUsernames.set(uname, true);
+
+          const [res] = await conn.query(
+            `INSERT IGNORE INTO user (nama_lengkap, username, password, role, is_active, kecamatan_id) VALUES (?, ?, ?, 'pcl', true, ?)`,
+            [nama, uname, passPcl, info.kecId]
+          );
+          if (res.insertId) {
+            pclCount++;
+            pclIdByName.set(nama, res.insertId);
+          }
+        }
+        console.log(`  👤 PCL: ${pclCount} akun dibuat (password default: pcl123)\n`);
+
+        // ========================================================
+        // STEP 5: Insert tugas_pcl (link PCL ke sub_sls)
+        // ========================================================
+        console.log('══════════════════════════════════════════════════');
+        console.log(' STEP 5: Menghubungkan PCL ke sub-SLS (tugas_pcl)');
+        console.log('══════════════════════════════════════════════════');
+
+        // Get all sub_sls with their PCL names
+        const [allSubSls] = await conn.query('SELECT id, id_sub_sls, nama_pcl FROM sub_sls WHERE nama_pcl IS NOT NULL');
+
+        // Refresh PCL IDs (in case INSERT IGNORE skipped some)
+        const [allPclUsers] = await conn.query("SELECT id, nama_lengkap FROM user WHERE role = 'pcl'");
+        for (const u of allPclUsers) {
+          pclIdByName.set(u.nama_lengkap, u.id);
+        }
+
+        // Build tugas_pcl rows
+        const tugasPclRows = [];
+        for (const row of allSubSls) {
+          const pclId = pclIdByName.get(row.nama_pcl);
+          if (pclId) {
+            tugasPclRows.push([pclId, row.id]);
+          }
+        }
+
+        // Bulk insert in chunks of 500
+        let tugasInserted = 0;
+        for (const chunk of chunkArray(tugasPclRows, 500)) {
+          const placeholders = chunk.map(() => '(?, ?)').join(', ');
+          const values = chunk.flat();
+          await conn.query(
+            `INSERT IGNORE INTO tugas_pcl (pcl_id, sub_sls_id) VALUES ${placeholders}`,
+            values
+          );
+          tugasInserted += chunk.length;
+        }
+        console.log(`  ✅ ${tugasInserted} penugasan PCL → sub-SLS berhasil diinsert\n`);
+      }
+    }
+
+    // ========================================================
+    // STEP 6: Insert target_periode (jika belum ada)
+    // ========================================================
+    console.log('══════════════════════════════════════════════════');
+    console.log(' STEP 6: Inisialisasi target periode (jika belum ada)');
+    console.log('══════════════════════════════════════════════════');
+
+    const [existTarget] = await conn.query('SELECT COUNT(*) AS cnt FROM target_periode');
+    if (existTarget[0].cnt === 0) {
       const today = new Date();
       const formatYMD = (d) => d.toISOString().split('T')[0];
-      const dateToday = formatYMD(today);
-      const dateYesterday = formatYMD(new Date(today.getTime() - 1 * 24 * 60 * 60 * 1000));
-      const date4DaysAgo = formatYMD(new Date(today.getTime() - 4 * 24 * 60 * 60 * 1000));
+      const startDate = formatYMD(new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000));
+      const endDate   = formatYMD(new Date(today.getTime() + 21 * 24 * 60 * 60 * 1000));
 
-      if (subSlsA && subSlsB && subSlsC) {
-        // Sub-SLS A: progress selesai sebagian tapi ada kendala pada hari ini
-        await connection.query(`INSERT INTO laporan_harian (tanggal, jml_open, jml_submit, jml_reject, jml_pending, jml_approved, status, keterangan, sub_sls_id, user_id) VALUES 
-          ('${dateToday}', 5, 10, 2, 8, 5, 'tidak_selesai_kendala', 'Hujan deras menghambat pencacahan di sektor pemukiman kumuh.', ${subSlsA}, ${pmlUserId});
-        `);
-
-        // Sub-SLS B: laporan terakhir 4 hari yang lalu, progres baru 10 dari 15 target (Kritis EWS test)
-        await connection.query(`INSERT INTO laporan_harian (tanggal, jml_open, jml_submit, jml_reject, jml_pending, jml_approved, status, keterangan, sub_sls_id, user_id) VALUES 
-          ('${date4DaysAgo}', 5, 10, 0, 4, 6, 'selesain_sebagian', 'Progres lambat karena responden berlibur.', ${subSlsB}, ${pmlUserId});
-        `);
-
-        // Sub-SLS C: target muatan 0, tapi dilaporkan selesai 100% kemarin
-        await connection.query(`INSERT INTO laporan_harian (tanggal, jml_open, jml_submit, jml_reject, jml_pending, jml_approved, status, keterangan, sub_sls_id, user_id) VALUES 
-          ('${dateYesterday}', 0, 0, 0, 0, 0, 'selesai_100%', 'Tidak ditemukan target unit usaha.', ${subSlsC}, ${pmlUserId});
-        `);
+      const [allKec] = await conn.query('SELECT id FROM kecamatan');
+      for (const kec of allKec) {
+        await conn.query(
+          'INSERT INTO target_periode (target_persen, tanggal_mulai, tanggal_selesai, kecamatan_id) VALUES (100.00, ?, ?, ?)',
+          [startDate, endDate, kec.id]
+        );
       }
+      console.log(`  ✅ Target periode 100% dibuat untuk ${allKec.length} kecamatan`);
+      console.log(`     Periode: ${startDate} s/d ${endDate}\n`);
+    } else {
+      console.log('  ℹ️  Target periode sudah ada. Skip.\n');
     }
 
-    console.log('🎉 Database setup completed successfully!');
+    // ========================================================
+    // SUMMARY
+    // ========================================================
+    console.log('══════════════════════════════════════════════════');
+    console.log(' ✅ DATABASE SETUP SELESAI!');
+    console.log('══════════════════════════════════════════════════');
+
+    const [[{ cntKec }]]    = await conn.query('SELECT COUNT(*) AS cntKec FROM kecamatan');
+    const [[{ cntDesa }]]   = await conn.query('SELECT COUNT(*) AS cntDesa FROM desa');
+    const [[{ cntSls }]]    = await conn.query('SELECT COUNT(*) AS cntSls FROM sls');
+    const [[{ cntSubSls }]] = await conn.query('SELECT COUNT(*) AS cntSubSls FROM sub_sls');
+    const [[{ cntUser }]]   = await conn.query('SELECT COUNT(*) AS cntUser FROM user');
+    const [[{ cntTugas }]]  = await conn.query('SELECT COUNT(*) AS cntTugas FROM tugas_pcl');
+
+    console.log(`  📊 Kecamatan  : ${cntKec}`);
+    console.log(`  📊 Desa       : ${cntDesa}`);
+    console.log(`  📊 SLS        : ${cntSls}`);
+    console.log(`  📊 Sub-SLS    : ${cntSubSls}`);
+    console.log(`  📊 User       : ${cntUser}`);
+    console.log(`  📊 Tugas PCL  : ${cntTugas}`);
+    console.log('\n  🔐 Default Passwords:');
+    console.log('     admin    → adminse2026');
+    console.log('     korlap   → korlap123');
+    console.log('     pml_*    → pml123');
+    console.log('     pcl_*    → pcl123');
+    console.log('══════════════════════════════════════════════════\n');
+
   } catch (err) {
-    console.error('❌ Database operations failed:', err.message);
+    console.error('\n❌ Error:', err.message);
+    if (err.sql) console.error('   SQL:', err.sql.substring(0, 200));
+    process.exit(1);
   } finally {
-    if (connection) await connection.end();
+    if (conn) await conn.end();
   }
 }
 
