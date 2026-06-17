@@ -33,6 +33,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const navWilayah = document.getElementById('nav-wilayah');
   const navUsers = document.getElementById('nav-users');
 
+  // Mobile Bottom Nav Menu Items
+  const mobNavItems = document.querySelectorAll('.mobile-nav-item');
+  const mobNavLaporan = document.getElementById('mob-nav-laporan');
+  const mobNavWilayah = document.getElementById('mob-nav-wilayah');
+  const mobNavUsers = document.getElementById('mob-nav-users');
+
   // Tab Content Panels
   const tabPanels = document.querySelectorAll('.tab-content');
   const pageTitle = document.getElementById('page-title');
@@ -148,18 +154,27 @@ document.addEventListener('DOMContentLoaded', () => {
       navLaporan.classList.add('hidden');
       navWilayah.classList.add('hidden');
       navUsers.classList.add('hidden');
+      mobNavLaporan.classList.add('hidden');
+      mobNavWilayah.classList.add('hidden');
+      mobNavUsers.classList.add('hidden');
     }
     // PML & Korlap: Dashboard, Laporan, EWS, Export
     else if (user.role === 'pml' || user.role === 'korlap') {
       navLaporan.classList.remove('hidden');
       navWilayah.classList.add('hidden');
       navUsers.classList.add('hidden');
+      mobNavLaporan.classList.remove('hidden');
+      mobNavWilayah.classList.add('hidden');
+      mobNavUsers.classList.add('hidden');
     }
     // Admin: Full Access
     else if (user.role === 'admin') {
       navLaporan.classList.remove('hidden');
       navWilayah.classList.remove('hidden');
       navUsers.classList.remove('hidden');
+      mobNavLaporan.classList.remove('hidden');
+      mobNavWilayah.classList.remove('hidden');
+      mobNavUsers.classList.remove('hidden');
     }
 
     // Default tab
@@ -180,6 +195,15 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Manage sidebar active class
     navItems.forEach(item => {
+      if (item.getAttribute('data-tab') === tabName) {
+        item.classList.add('active');
+      } else {
+        item.classList.remove('active');
+      }
+    });
+
+    // Manage mobile bottom nav active class
+    mobNavItems.forEach(item => {
       if (item.getAttribute('data-tab') === tabName) {
         item.classList.add('active');
       } else {
@@ -227,6 +251,19 @@ document.addEventListener('DOMContentLoaded', () => {
       e.preventDefault();
       const tab = item.getAttribute('data-tab');
       switchTab(tab);
+    });
+  });
+
+  // Mobile navigation click
+  mobNavItems.forEach(item => {
+    item.addEventListener('click', (e) => {
+      e.preventDefault();
+      const tab = item.getAttribute('data-tab');
+      if (tab === 'logout') {
+        btnLogout.click();
+      } else {
+        switchTab(tab);
+      }
     });
   });
 

@@ -1,33 +1,63 @@
 /* ==========================================================================
-   Sensus Ekonomi 2026 Field Survey Monitoring Dashboard CSS
-   Premium Glassmorphic Dark UI Styling (Preserved & Extended)
+   SecondBrain BPS Design System & Visual Style Sheet
+   Optimized for Economic Census 2026 Field Survey Monitoring
    ========================================================================== */
 
 :root {
-  --bg-color: #0b0f19;
-  --card-bg: rgba(17, 24, 39, 0.65);
-  --card-border: rgba(255, 255, 255, 0.08);
+  /* 1. Palet Warna (Color Tokens) */
+  --bg-primary: #0a0e1a;
+  --bg-secondary: #111827;
+  --bg-tertiary: #1a1f35;
+  --bg-elevated: #1e2340;
+  
+  --primary: #6366f1;
+  --primary-light: #818cf8;
+  --primary-dark: #4f46e5;
+  --primary-glow: rgba(99, 102, 241, 0.3);
+  
+  --accent-cyan: #22d3ee;
+  --accent-cyan-glow: rgba(34, 211, 238, 0.25);
+  --accent-emerald: #10b981;
+  --accent-emerald-glow: rgba(16, 185, 129, 0.25);
+  
+  --danger: #ef4444;
+  --danger-glow: rgba(239, 68, 68, 0.25);
+  --warning: #f59e0b;
+  --warning-glow: rgba(245, 158, 11, 0.25);
+  --success: #10b981;
+  --success-glow: rgba(16, 185, 129, 0.25);
+  --info: #3b82f6;
+  --info-glow: rgba(59, 130, 246, 0.25);
+  
   --text-primary: #f3f4f6;
   --text-secondary: #9ca3af;
   --text-muted: #6b7280;
+  --card-border: rgba(255, 255, 255, 0.08);
+
+  /* 2. Tipografi (Typography Sizing System) */
+  --font-size-xs: 12px;
+  --font-size-sm: 13px;
+  --font-size-base: 14px;
+  --font-size-md: 16px;
+  --font-size-lg: 18px;
+  --font-size-xl: 20px;
+  --font-size-2xl: 24px;
+  --font-size-3xl: 30px;
+  --font-size-4xl: 36px;
   
-  /* Vibrant Accents */
-  --accent-blue: #3b82f6;
-  --accent-blue-glow: rgba(59, 130, 246, 0.25);
-  --accent-purple: #8b5cf6;
-  --accent-purple-glow: rgba(139, 92, 246, 0.25);
-  --accent-emerald: #10b981;
-  --accent-emerald-glow: rgba(16, 185, 129, 0.25);
-  --accent-orange: #f97316;
-  --accent-orange-glow: rgba(249, 115, 22, 0.25);
-  --accent-gold: #f59e0b;
-  --accent-gold-glow: rgba(245, 158, 11, 0.25);
-  --accent-red: #ef4444;
-  --accent-red-glow: rgba(239, 68, 68, 0.25);
-  
-  --font-sans: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
-  
+
+  /* 3. Kelengkungan Sudut (Border Radius) */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 20px;
+  --radius-full: 9999px;
+
+  /* Layout configuration variables */
+  --sidebar-width: 260px;
   --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -39,14 +69,16 @@
 }
 
 body {
-  background-color: var(--bg-color);
+  background-color: var(--bg-primary);
   color: var(--text-primary);
   font-family: var(--font-sans);
+  font-size: var(--font-size-base);
   min-height: 100vh;
   position: relative;
   overflow-x: hidden;
   display: flex;
   flex-direction: column;
+  line-height: 1.5;
 }
 
 .hidden {
@@ -61,19 +93,19 @@ body {
   border-radius: 50%;
   filter: blur(120px);
   z-index: -1;
-  opacity: 0.15;
+  opacity: 0.12;
   pointer-events: none;
 }
 
 .bg-glow-1 {
-  background: radial-gradient(circle, var(--accent-purple) 0%, transparent 70%);
+  background: radial-gradient(circle, var(--primary) 0%, transparent 70%);
   top: -10%;
   left: -10%;
   animation: floatOrb 15s infinite alternate ease-in-out;
 }
 
 .bg-glow-2 {
-  background: radial-gradient(circle, var(--accent-blue) 0%, transparent 70%);
+  background: radial-gradient(circle, var(--accent-cyan) 0%, transparent 70%);
   bottom: -10%;
   right: -10%;
   animation: floatOrb 20s infinite alternate-reverse ease-in-out;
@@ -81,7 +113,49 @@ body {
 
 @keyframes floatOrb {
   0% { transform: translate(0, 0) scale(1); }
-  100% { transform: translate(5%, 8%) scale(1.1); }
+  100% { transform: translate(4%, 7%) scale(1.08); }
+}
+
+/* ==========================================================================
+   5. Permukaan Kaca Kustom (Glassmorphic Surfaces)
+   ========================================================================== */
+.glass-card, .card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  transition: var(--transition-smooth);
+}
+
+.glass-card-hover:hover, .card:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.18);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  transform: translateY(-1px);
+}
+
+.glass-card-interactive {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: var(--transition-smooth);
+  cursor: pointer;
+}
+
+.glass-card-interactive:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.18);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  transform: translateY(-2px);
+}
+
+.glass-card-interactive:active {
+  background: rgba(255, 255, 255, 0.12);
+  transform: translateY(0);
 }
 
 /* ==========================================================================
@@ -94,13 +168,14 @@ body {
   min-height: 100vh;
   padding: 1.5rem;
   z-index: 10;
+  animation: fadeIn 300ms ease forwards;
 }
 
 .login-card {
   width: 100%;
   max-width: 420px;
   padding: 2.5rem;
-  border-radius: 24px;
+  border-radius: var(--radius-2xl);
 }
 
 .login-header {
@@ -109,15 +184,15 @@ body {
 }
 
 .login-header .logo-container {
-  background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+  background: linear-gradient(135deg, var(--primary), var(--primary-light));
   width: 3.5rem;
   height: 3.5rem;
-  border-radius: 16px;
+  border-radius: var(--radius-xl);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   margin-bottom: 1rem;
-  box-shadow: 0 4px 20px rgba(139, 92, 246, 0.4);
+  box-shadow: 0 4px 20px var(--primary-glow);
 }
 
 .login-header .logo-icon {
@@ -127,29 +202,29 @@ body {
 }
 
 .login-header h2 {
-  font-size: 1.5rem;
+  font-size: var(--font-size-xl);
   font-weight: 700;
   color: #fff;
 }
 
 .login-header p {
   color: var(--text-secondary);
-  font-size: 0.9rem;
+  font-size: var(--font-size-sm);
   margin-top: 0.25rem;
 }
 
 .login-footer {
   text-align: center;
   margin-top: 1.5rem;
-  font-size: 0.8rem;
+  font-size: var(--font-size-xs);
   color: var(--text-muted);
 }
 
 /* Alert Boxes */
 .alert {
   padding: 0.75rem 1rem;
-  border-radius: 10px;
-  font-size: 0.875rem;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
   margin-bottom: 1.25rem;
   border: 1px solid transparent;
   line-height: 1.4;
@@ -178,8 +253,8 @@ body {
 
 /* Sidebar Styling */
 .sidebar {
-  width: 260px;
-  background: rgba(10, 15, 30, 0.8);
+  width: var(--sidebar-width);
+  background: rgba(10, 14, 26, 0.85);
   border-right: 1px solid var(--card-border);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
@@ -190,6 +265,7 @@ body {
   bottom: 0;
   left: 0;
   z-index: 100;
+  transition: var(--transition-smooth);
 }
 
 .sidebar-brand {
@@ -201,10 +277,10 @@ body {
 }
 
 .sidebar-logo {
-  background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+  background: linear-gradient(135deg, var(--primary), var(--primary-light));
   width: 2.25rem;
   height: 2.25rem;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -217,13 +293,13 @@ body {
 }
 
 .brand-text h3 {
-  font-size: 1.1rem;
+  font-size: var(--font-size-md);
   font-weight: 700;
   color: #fff;
 }
 
 .brand-text span {
-  font-size: 0.7rem;
+  font-size: 10px;
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -243,32 +319,32 @@ body {
   width: 2.5rem;
   height: 2.5rem;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--accent-purple), var(--accent-orange));
+  background: linear-gradient(135deg, var(--primary-light), var(--warning));
   display: flex;
   align-items: center;
   justify-content: center;
   color: #fff;
   font-weight: 700;
-  font-size: 1.1rem;
+  font-size: var(--font-size-md);
 }
 
 .profile-info h4 {
-  font-size: 0.9rem;
+  font-size: var(--font-size-sm);
   font-weight: 600;
   color: #fff;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 150px;
+  max-width: 140px;
 }
 
 .role-badge {
-  font-size: 0.65rem;
+  font-size: 10px;
   font-weight: 700;
   padding: 0.15rem 0.4rem;
-  border-radius: 4px;
-  background: rgba(59, 130, 246, 0.15);
-  color: #93c5fd;
+  border-radius: var(--radius-sm);
+  background: rgba(99, 102, 241, 0.15);
+  color: #a5b4fc;
   text-transform: uppercase;
   display: inline-block;
   margin-top: 0.15rem;
@@ -295,15 +371,15 @@ body {
   padding: 0.75rem 1rem;
   color: var(--text-secondary);
   text-decoration: none;
-  font-size: 0.9rem;
+  font-size: var(--font-size-base);
   font-weight: 500;
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   transition: var(--transition-smooth);
 }
 
 .sidebar-nav a i {
-  width: 1.1rem;
-  height: 1.1rem;
+  width: 1.15rem;
+  height: 1.15rem;
   transition: var(--transition-smooth);
 }
 
@@ -314,13 +390,13 @@ body {
 }
 
 .sidebar-nav li.active a {
-  background: linear-gradient(90deg, rgba(139, 92, 246, 0.15) 0%, rgba(59, 130, 246, 0.05) 100%);
-  border-left: 3px solid var(--accent-purple);
+  background: linear-gradient(90deg, rgba(99, 102, 241, 0.15) 0%, rgba(99, 102, 241, 0.03) 100%);
+  border-left: 3px solid var(--primary);
   padding-left: calc(1rem - 3px);
 }
 
 .sidebar-nav li.active a i {
-  color: var(--accent-purple);
+  color: var(--primary);
 }
 
 .sidebar-footer {
@@ -342,16 +418,17 @@ body {
 
 /* Main Panel Layout */
 .main-panel {
-  margin-left: 260px;
+  margin-left: var(--sidebar-width);
   flex-grow: 1;
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  transition: var(--transition-smooth);
 }
 
 .main-header {
   height: 70px;
-  background: rgba(10, 15, 30, 0.4);
+  background: rgba(10, 14, 26, 0.4);
   border-bottom: 1px solid var(--card-border);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
@@ -365,7 +442,7 @@ body {
 }
 
 #page-title {
-  font-size: 1.35rem;
+  font-size: var(--font-size-xl);
   font-weight: 700;
   color: #fff;
 }
@@ -381,9 +458,9 @@ body {
   gap: 0.6rem;
   background: rgba(255, 255, 255, 0.04);
   padding: 0.4rem 0.85rem;
-  border-radius: 9999px;
+  border-radius: var(--radius-full);
   border: 1px solid var(--card-border);
-  font-size: 0.8rem;
+  font-size: var(--font-size-xs);
   font-weight: 500;
 }
 
@@ -391,12 +468,12 @@ body {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background-color: var(--accent-gold);
+  background-color: var(--warning);
 }
 
 .pulse-indicator.active {
-  background-color: var(--accent-emerald);
-  box-shadow: 0 0 8px var(--accent-emerald);
+  background-color: var(--success);
+  box-shadow: 0 0 8px var(--success);
   animation: pulse 1.8s infinite;
 }
 
@@ -409,26 +486,12 @@ body {
 .content-body {
   padding: 2rem;
   flex-grow: 1;
+  animation: slideUp 300ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 /* ==========================================================================
    3. GENERAL CARD & CONTAINER STYLING
    ========================================================================== */
-.card {
-  background: var(--card-bg);
-  border: 1px solid var(--card-border);
-  border-radius: 20px;
-  padding: 1.5rem;
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-  transition: var(--transition-smooth);
-}
-
-.card:hover {
-  border-color: rgba(255, 255, 255, 0.15);
-}
-
 .card-header {
   display: flex;
   align-items: center;
@@ -437,7 +500,7 @@ body {
 }
 
 .card-header h3 {
-  font-size: 1.05rem;
+  font-size: var(--font-size-md);
   font-weight: 600;
   color: var(--text-primary);
 }
@@ -447,20 +510,10 @@ body {
   height: 1.25rem;
 }
 
-.icon-blue { color: var(--accent-blue); }
-.icon-purple { color: var(--accent-purple); }
-.icon-emerald { color: var(--accent-emerald); }
-.icon-orange { color: var(--accent-orange); }
-
-.justify-between {
-  justify-content: space-between;
-}
-
-.flex-align {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
+.icon-blue { color: var(--accent-cyan); filter: drop-shadow(0 0 4px var(--accent-cyan-glow)); }
+.icon-purple { color: var(--primary-light); filter: drop-shadow(0 0 4px var(--primary-glow)); }
+.icon-emerald { color: var(--success); filter: drop-shadow(0 0 4px var(--success-glow)); }
+.icon-orange { color: var(--warning); filter: drop-shadow(0 0 4px var(--warning-glow)); }
 
 /* Grid Layouts */
 .dashboard-grid {
@@ -477,12 +530,8 @@ body {
   margin-bottom: 1.5rem;
 }
 
-.full-width-card {
-  grid-column: span 4;
-}
-
 .main-stat {
-  font-size: 2.25rem;
+  font-size: var(--font-size-4xl);
   font-weight: 700;
   color: #fff;
   margin-bottom: 0.35rem;
@@ -490,7 +539,7 @@ body {
 
 .stat-subtext {
   color: var(--text-secondary);
-  font-size: 0.85rem;
+  font-size: var(--font-size-xs);
 }
 
 /* Large Progress Ring Card */
@@ -528,13 +577,13 @@ body {
 
 .progress-ring-fill {
   fill: none;
-  stroke: var(--accent-purple);
+  stroke: var(--primary);
   stroke-width: 8px;
   stroke-linecap: round;
   stroke-dasharray: 251.2;
   stroke-dashoffset: 251.2;
   transition: stroke-dashoffset 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-  filter: drop-shadow(0 0 6px var(--accent-purple-glow));
+  filter: drop-shadow(0 0 6px var(--primary-glow));
 }
 
 .progress-text-large {
@@ -549,19 +598,19 @@ body {
 }
 
 .progress-text-large .pct {
-  font-size: 1.65rem;
+  font-size: var(--font-size-2xl);
   font-weight: 700;
   color: #fff;
 }
 
 .progress-text-large .label {
-  font-size: 0.65rem;
+  font-size: 10px;
   text-transform: uppercase;
   color: var(--text-muted);
 }
 
 .progress-summary-details {
-  font-size: 0.9rem;
+  font-size: var(--font-size-sm);
   color: var(--text-secondary);
   text-align: center;
   margin-top: 1rem;
@@ -586,12 +635,12 @@ body {
 
 .table-section-title {
   margin: 2rem 0 1rem 0;
-  border-left: 3px solid var(--accent-blue);
+  border-left: 3px solid var(--accent-cyan);
   padding-left: 0.75rem;
 }
 
 .table-section-title h3 {
-  font-size: 1.15rem;
+  font-size: var(--font-size-md);
   font-weight: 600;
   color: #fff;
 }
@@ -618,7 +667,7 @@ body {
   width: 100%;
   border-collapse: collapse;
   text-align: left;
-  font-size: 0.875rem;
+  font-size: var(--font-size-base);
 }
 
 .data-table th,
@@ -632,7 +681,7 @@ body {
   color: var(--text-secondary);
   font-weight: 600;
   text-transform: uppercase;
-  font-size: 0.75rem;
+  font-size: 11px;
   letter-spacing: 0.05em;
   white-space: nowrap;
 }
@@ -656,23 +705,23 @@ body {
 }
 
 .badge {
-  font-size: 0.75rem;
+  font-size: 11px;
   font-weight: 600;
   padding: 0.25rem 0.6rem;
-  border-radius: 9999px;
+  border-radius: var(--radius-full);
   display: inline-block;
   text-align: center;
 }
 
 .badge-success {
   background: rgba(16, 185, 129, 0.1);
-  color: var(--accent-emerald);
+  color: var(--success);
   border: 1px solid rgba(16, 185, 129, 0.2);
 }
 
 .badge-warning {
   background: rgba(245, 158, 11, 0.1);
-  color: var(--accent-gold);
+  color: var(--warning);
   border: 1px solid rgba(245, 158, 11, 0.2);
 }
 
@@ -683,7 +732,7 @@ body {
 }
 
 /* ==========================================================================
-   5. FORM AND INPUTS
+   6. Elemen UI Global (Global Form Controls)
    ========================================================================== */
 .form-card {
   display: flex;
@@ -698,7 +747,7 @@ body {
 }
 
 .form-group label {
-  font-size: 0.875rem;
+  font-size: var(--font-size-sm);
   font-weight: 500;
   color: var(--text-secondary);
 }
@@ -736,16 +785,17 @@ input[type="password"],
 input[type="number"],
 input[type="date"],
 select,
-textarea {
-  width: 100%;
-  padding: 0.75rem 1rem;
-  background: rgba(0, 0, 0, 0.2);
-  border: 1px solid var(--card-border);
-  border-radius: 10px;
+textarea,
+.input-base {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-md);
   color: #fff;
   font-family: var(--font-sans);
-  font-size: 0.9rem;
+  font-size: var(--font-size-base);
+  padding: 0.75rem 1rem;
   transition: var(--transition-smooth);
+  width: 100%;
 }
 
 .input-wrapper input {
@@ -754,15 +804,16 @@ textarea {
 
 input:focus,
 select:focus,
-textarea:focus {
+textarea:focus,
+.input-base:focus {
   outline: none;
-  border-color: var(--accent-blue);
-  box-shadow: 0 0 10px var(--accent-blue-glow);
-  background: rgba(0, 0, 0, 0.35);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-glow);
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .form-help {
-  font-size: 0.75rem;
+  font-size: var(--font-size-xs);
   color: var(--text-muted);
   margin-top: 0.15rem;
 }
@@ -776,7 +827,7 @@ textarea:focus {
 .check-group input[type="checkbox"] {
   width: 16px;
   height: 16px;
-  accent-color: var(--accent-blue);
+  accent-color: var(--primary);
 }
 
 /* Assignment specific inputs grid */
@@ -796,7 +847,7 @@ textarea:focus {
 }
 
 .assign-input label {
-  font-size: 0.75rem;
+  font-size: 10px;
   font-weight: 600;
   text-transform: uppercase;
   color: var(--text-muted);
@@ -824,7 +875,7 @@ textarea:focus {
 .spec-item {
   display: flex;
   justify-content: space-between;
-  font-size: 0.8rem;
+  font-size: var(--font-size-xs);
   padding-bottom: 0.25rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.03);
 }
@@ -843,13 +894,13 @@ textarea:focus {
 }
 
 /* ==========================================================================
-   6. EWS STYLING & COLOR SYSTEM
+   EWS STYLING & COLOR SYSTEM
    ========================================================================== */
 .legend-badge {
-  font-size: 0.7rem;
+  font-size: var(--font-size-xs);
   font-weight: 600;
   padding: 0.25rem 0.65rem;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   margin-left: 0.5rem;
   display: inline-block;
 }
@@ -862,7 +913,7 @@ textarea:focus {
 
 .level-perhatian {
   background: rgba(245, 158, 11, 0.15);
-  color: var(--accent-gold);
+  color: var(--warning);
   border: 1px solid rgba(245, 158, 11, 0.3);
 }
 
@@ -885,7 +936,7 @@ textarea:focus {
 }
 
 /* ==========================================================================
-   7. BUTTONS & UI ACTIONS
+   B. Tombol-Tombol (.btn)
    ========================================================================== */
 .btn {
   display: inline-flex;
@@ -894,9 +945,9 @@ textarea:focus {
   gap: 0.5rem;
   padding: 0.75rem 1.5rem;
   font-family: var(--font-sans);
-  font-size: 0.9rem;
+  font-size: var(--font-size-base);
   font-weight: 600;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   border: none;
   cursor: pointer;
   transition: var(--transition-smooth);
@@ -908,14 +959,14 @@ textarea:focus {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+  background: var(--primary);
   color: #fff;
-  box-shadow: 0 4px 15px rgba(139, 92, 246, 0.25);
+  box-shadow: 0 0 10px var(--primary-glow);
 }
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
+  box-shadow: 0 0 20px var(--primary-glow);
   filter: brightness(1.1);
 }
 
@@ -930,18 +981,19 @@ textarea:focus {
 }
 
 .btn-danger {
-  background: rgba(239, 68, 68, 0.2);
+  background: var(--danger);
   color: #fff;
-  border: 1px solid rgba(239, 68, 68, 0.3);
+  box-shadow: 0 0 10px var(--danger-glow);
 }
 
 .btn-danger:hover {
-  background: var(--accent-red);
+  transform: translateY(-2px);
+  box-shadow: 0 0 20px var(--danger-glow);
 }
 
 .btn-icon-sm {
   padding: 0.35rem;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   background: transparent;
   border: none;
   cursor: pointer;
@@ -963,8 +1015,56 @@ textarea:focus {
 }
 
 /* ==========================================================================
-   8. EXPORT VIEW SPECIFIC STYLES
+   7. Sistem Animasi & Transisi (Animations)
    ========================================================================== */
+.animate-fade-in {
+  animation: fadeIn 300ms ease forwards;
+}
+
+.animate-slide-up {
+  animation: slideUp 300ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-pulse {
+  animation: pulse 2s infinite ease-in-out;
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+.animate-spin {
+  animation: spin 1s infinite linear;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(15px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Export large icon */
 .export-large-icon {
   width: 5rem;
   height: 5rem;
@@ -976,7 +1076,7 @@ textarea:focus {
 .sheet-desc-row {
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid rgba(255, 255, 255, 0.04);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   padding: 1.25rem;
 }
 
@@ -987,72 +1087,141 @@ textarea:focus {
 }
 
 .sheet-desc-row p {
-  font-size: 0.85rem;
+  font-size: var(--font-size-sm);
   color: var(--text-secondary);
   line-height: 1.4;
 }
 
 /* ==========================================================================
-   9. RESPONSIVE BREAKPOINTS
+   Mobile Bottom Navigation Bar
    ========================================================================== */
-@media (max-width: 1100px) {
+.mobile-bottom-nav {
+  display: none; /* Hidden on desktop */
+}
+
+/* ==========================================================================
+   8. Responsivitas Layar (Responsive Grid Layouts)
+   ========================================================================== */
+
+/* Sidelayout tablet (768px - 1023px) */
+@media (min-width: 768px) and (max-width: 1023px) {
+  :root {
+    --sidebar-width: 220px;
+  }
+  .sidebar {
+    width: var(--sidebar-width);
+  }
+  .main-panel {
+    margin-left: var(--sidebar-width);
+  }
   .dashboard-grid {
     grid-template-columns: repeat(2, 1fr);
-  }
-  .full-width-card {
-    grid-column: span 2;
   }
   .dashboard-grid-2 {
     grid-template-columns: 1fr;
   }
 }
 
-@media (max-width: 900px) {
-  /* Collapse Sidebar on tablet/mobile screens */
+/* Sidelayout ponsel (< 768px) */
+@media (max-width: 767px) {
+  :root {
+    --font-size-base: 13px;
+  }
+  
   .sidebar {
-    width: 70px;
+    display: none !important; /* Hide sidebar completely */
   }
-  .sidebar-logo .brand-text,
-  .sidebar-profile .profile-info,
-  .sidebar-nav span,
-  .sidebar-footer span {
-    display: none !important;
-  }
-  .sidebar-brand,
-  .sidebar-profile {
-    justify-content: center;
-    padding: 1rem 0;
-  }
-  .sidebar-nav a {
-    justify-content: center;
-    padding: 0.75rem;
-  }
+  
   .main-panel {
-    margin-left: 70px;
+    margin-left: 0 !important; /* Push main content full width */
+    padding-bottom: 74px; /* Ensure content is not hidden behind mobile nav bar (64px + 10px buffer) */
   }
+
+  .main-header {
+    padding: 0 1rem;
+  }
+
+  .content-body {
+    padding: 1rem;
+  }
+  
+  /* Grid stack vertically */
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .dashboard-grid-2 {
+    grid-template-columns: 1fr;
+  }
+
+  .assignment-input-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  
   .form-row {
     flex-direction: column;
     gap: 0;
   }
+  
   .col-6 {
     width: 100%;
   }
+
+  /* Mobile Bottom Navigation Bar (64px height) */
+  .mobile-bottom-nav {
+    display: flex;
+    height: 64px;
+    background: rgba(10, 14, 26, 0.95);
+    border-top: 1px solid var(--card-border);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 200;
+    align-items: center;
+    justify-content: space-around;
+    padding: 0 0.5rem;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.4);
+  }
+
+  .mobile-nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    gap: 3px;
+    transition: var(--transition-smooth);
+    padding: 0.25rem 0;
+  }
+
+  .mobile-nav-item i {
+    width: 1.25rem;
+    height: 1.25rem;
+    transition: var(--transition-smooth);
+  }
+
+  .mobile-nav-item.active {
+    color: var(--primary);
+    font-weight: 600;
+  }
+
+  .mobile-nav-item.active i {
+    transform: translateY(-2px);
+    filter: drop-shadow(0 0 4px var(--primary-glow));
+  }
 }
 
-@media (max-width: 600px) {
-  .dashboard-grid {
-    grid-template-columns: 1fr;
-  }
-  .full-width-card {
-    grid-column: span 1;
-  }
-  .main-header {
-    padding: 0 1rem;
-  }
-  .content-body {
-    padding: 1rem;
-  }
+@media (max-width: 450px) {
   .assignment-input-grid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: 1fr 1fr;
+  }
+  .mobile-bottom-nav span {
+    font-size: 8px; /* Extra small labels on small screens */
   }
 }
