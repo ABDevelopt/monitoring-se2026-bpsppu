@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sistem Monitoring Pendataan Lapangan SE2026</title>
-  <meta name="description" content="Sistem monitoring real-time progres pendataan lapangan Sensus Ekonomi 2026.">
+  <title>Monitoring Lapangan SE2026 – BPS Penajam Paser Utara</title>
+  <meta name="description" content="Sistem monitoring real-time progres pendataan lapangan Sensus Ekonomi 2026 BPS Kabupaten Penajam Paser Utara.">
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -105,7 +105,7 @@
             <a href="#"><i data-lucide="users-2"></i><span>Manajemen User</span></a>
           </li>
           <li class="nav-item" data-tab="ekspor">
-            <a href="#"><i data-lucide="file-spreadsheed" data-lucide-override="file-spreadsheet"></i><span>Ekspor Data</span></a>
+            <a href="#"><i data-lucide="file-spreadsheet"></i><span>Ekspor Data</span></a>
           </li>
         </ul>
       </nav>
@@ -339,29 +339,40 @@
                   </div>
 
                   <div class="form-group">
-                    <label>Jumlah Assignment berdasarkan Status:</label>
+                    <label>Jumlah Assignment per Status</label>
                     <div class="assignment-input-grid">
-                      <div class="assign-input">
-                        <label for="lap-open">Open</label>
-                        <input type="number" id="lap-open" min="0" value="0" required>
+                      <div class="assign-open">
+                        <div class="assign-input">
+                          <label for="lap-open">Open</label>
+                          <input type="number" id="lap-open" min="0" value="0" required>
+                        </div>
                       </div>
-                      <div class="assign-input">
-                        <label for="lap-submit">Submit</label>
-                        <input type="number" id="lap-submit" min="0" value="0" required>
+                      <div class="assign-submit">
+                        <div class="assign-input">
+                          <label for="lap-submit">Submit</label>
+                          <input type="number" id="lap-submit" min="0" value="0" required>
+                        </div>
                       </div>
-                      <div class="assign-input">
-                        <label for="lap-reject">Reject</label>
-                        <input type="number" id="lap-reject" min="0" value="0" required>
+                      <div class="assign-reject">
+                        <div class="assign-input">
+                          <label for="lap-reject">Reject</label>
+                          <input type="number" id="lap-reject" min="0" value="0" required>
+                        </div>
                       </div>
-                      <div class="assign-input">
-                        <label for="lap-pending">Pending</label>
-                        <input type="number" id="lap-pending" min="0" value="0" required>
+                      <div class="assign-pending">
+                        <div class="assign-input">
+                          <label for="lap-pending">Pending</label>
+                          <input type="number" id="lap-pending" min="0" value="0" required>
+                        </div>
                       </div>
-                      <div class="assign-input">
-                        <label for="lap-approved">Approved</label>
-                        <input type="number" id="lap-approved" min="0" value="0" required>
+                      <div class="assign-approved">
+                        <div class="assign-input">
+                          <label for="lap-approved">Approved</label>
+                          <input type="number" id="lap-approved" min="0" value="0" required>
+                        </div>
                       </div>
                     </div>
+                    <p class="form-help">Isi jumlah usaha per status pada hari ini. Total tidak harus sama dengan target muatan.</p>
                   </div>
 
                   <div class="form-row">
@@ -376,8 +387,8 @@
                   </div>
 
                   <div class="form-group">
-                    <label for="lap-keterangan">Keterangan / Detail Kendala</label>
-                    <textarea id="lap-keterangan" rows="3" placeholder="Jelaskan kendala cuaca, penolakan responden, salah peta, dsb. (Wajib diisi jika status laporan berkendala)"></textarea>
+                    <label for="lap-keterangan">Keterangan / Catatan</label>
+                    <textarea id="lap-keterangan" rows="3" placeholder="Contoh: hujan deras, responden tidak di tempat, salah peta, dsb. Wajib diisi jika status 'Tidak Selesai / Ada Kendala'."></textarea>
                   </div>
 
                   <button type="submit" class="btn btn-primary" id="btn-save-laporan">
@@ -682,7 +693,7 @@
               <i data-lucide="file-spreadsheet" class="card-icon icon-emerald"></i>
               <h3>Unduh Laporan Progres & Log Kendala (Format Excel)</h3>
             </div>
-            <div class="card-content flex-center-col" style="padding: 3rem 1.5rem;">
+            <div class="card-content flex-center-col" style="padding: 2.5rem 1.5rem;">
               <i data-lucide="file-down" class="export-large-icon"></i>
               <h2>Unduh File Laporan Kerja Lapangan</h2>
               <p style="color: var(--text-secondary); max-width: 500px; text-align: center; margin-bottom: 2rem; line-height: 1.5;">
