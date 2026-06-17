@@ -44,6 +44,18 @@ lines.push('-- ====================================================');
 lines.push('SET FOREIGN_KEY_CHECKS=0;');
 lines.push('SET NAMES utf8mb4;');
 lines.push('');
+lines.push('-- ====================================================');
+lines.push('-- DROP TABLES LAMA (reset skema)');
+lines.push('-- ====================================================');
+lines.push('DROP TABLE IF EXISTS tugas_pcl;');
+lines.push('DROP TABLE IF EXISTS laporan_harian;');
+lines.push('DROP TABLE IF EXISTS target_periode;');
+lines.push('DROP TABLE IF EXISTS sub_sls;');
+lines.push('DROP TABLE IF EXISTS sls;');
+lines.push('DROP TABLE IF EXISTS desa;');
+lines.push('DROP TABLE IF EXISTS `user`;');
+lines.push('DROP TABLE IF EXISTS kecamatan;');
+lines.push('');
 
 // ----------------------------------------------------------------
 // CREATE TABLES

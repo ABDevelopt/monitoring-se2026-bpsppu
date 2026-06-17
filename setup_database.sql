@@ -1,9 +1,21 @@
 -- ====================================================
 -- SQL SETUP: Sensus Ekonomi 2026 - BPS PPU
--- Generated: 2026-06-17T14:43:42.160Z
+-- Generated: 2026-06-17T14:49:25.393Z
 -- ====================================================
 SET FOREIGN_KEY_CHECKS=0;
 SET NAMES utf8mb4;
+
+-- ====================================================
+-- DROP TABLES LAMA (reset skema)
+-- ====================================================
+DROP TABLE IF EXISTS tugas_pcl;
+DROP TABLE IF EXISTS laporan_harian;
+DROP TABLE IF EXISTS target_periode;
+DROP TABLE IF EXISTS sub_sls;
+DROP TABLE IF EXISTS sls;
+DROP TABLE IF EXISTS desa;
+DROP TABLE IF EXISTS `user`;
+DROP TABLE IF EXISTS kecamatan;
 
 -- ====================================================
 -- TABLES
