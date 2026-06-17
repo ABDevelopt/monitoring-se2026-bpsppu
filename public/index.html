@@ -17,6 +17,17 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <!-- App Loading Splash (hidden after auth check) -->
+  <div id="app-splash" class="app-splash">
+    <div class="splash-inner">
+      <div class="splash-logo">
+        <i data-lucide="trending-up"></i>
+      </div>
+      <div class="splash-spinner"></div>
+      <span class="splash-text">Memuat aplikasi...</span>
+    </div>
+  </div>
+
   <!-- Neon Background Accents -->
   <div class="bg-glow bg-glow-1"></div>
   <div class="bg-glow bg-glow-2"></div>
@@ -24,7 +35,7 @@
   <!-- ==========================================================================
        1. LOGIN VIEW
        ========================================================================== -->
-  <div id="login-container" class="login-wrapper">
+  <div id="login-container" class="login-wrapper hidden">
     <div class="login-card card">
       <div class="login-header">
         <div class="logo-container">

@@ -21,6 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const loginError = document.getElementById('login-error');
   const appContainer = document.getElementById('app-container');
   const btnLogout = document.getElementById('btn-logout');
+  const appSplash = document.getElementById('app-splash');
 
   // Sidebar Profiling
   const profileName = document.getElementById('profile-name');
@@ -122,6 +123,15 @@ document.addEventListener('DOMContentLoaded', () => {
   // Router & Session Handlers
   // ==========================================================================
 
+  // Dismiss splash screen with fade-out
+  function hideSplash() {
+    if (appSplash) {
+      appSplash.classList.add('splash-hidden');
+      // Remove from DOM after transition
+      appSplash.addEventListener('transitionend', () => appSplash.remove(), { once: true });
+    }
+  }
+
   // Check if user is logged in
   async function checkAuthSession() {
     try {
@@ -179,6 +189,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Default tab
     switchTab('dashboard');
+    hideSplash();
   }
 
   // Show login panel
@@ -187,6 +198,7 @@ document.addEventListener('DOMContentLoaded', () => {
     appContainer.classList.add('hidden');
     loginContainer.classList.remove('hidden');
     loginForm.reset();
+    hideSplash();
   }
 
   // Tab Switch logic
