@@ -168,8 +168,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // 5.4 Startup File Configuration check
-    // We checks if main entry is named app.js (standard for Passenger)
-    setCheckItem(chkStartupIcon, chkStartupDesc, 'success', `Startup file is loaded correctly. 'app.js' is the target startup filename for Dewaweb cPanel applications.`);
+    // We checks if main entry is named server.js (standard for Passenger)
+    setCheckItem(chkStartupIcon, chkStartupDesc, 'success', `Startup file is loaded correctly. 'server.js' is the target startup filename for Dewaweb cPanel applications.`);
 
     // 6. JSON Live output
     rawJsonOutput.textContent = JSON.stringify(data, null, 2);

@@ -2,9 +2,9 @@
   "name": "dewaweb-nodejs-dashboard",
   "version": "1.0.0",
   "description": "Simple Server Status Dashboard optimized for Dewaweb Shared Hosting (cPanel / Phusion Passenger)",
-  "main": "app.js",
+  "main": "server.js",
   "scripts": {
-    "start": "node app.js"
+    "start": "node server.js"
   },
   "dependencies": {
     "express": "^4.19.2"

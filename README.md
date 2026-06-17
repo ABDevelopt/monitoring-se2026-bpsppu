@@ -3,7 +3,7 @@
 Sebuah proyek Node.js sederhana (Server Status & Monitoring Dashboard) yang dirancang khusus untuk berjalan dengan baik di **Dewaweb Shared Hosting** (cPanel). Proyek ini memantau performa server secara real-time dan memverifikasi konfigurasi server.
 
 ## 📁 Struktur Proyek
-- `app.js`: File utama aplikasi Node.js (Express server).
+- `server.js`: File utama aplikasi Node.js (Express server).
 - `package.json`: Konfigurasi dependensi dan perintah run.
 - `public/`: Berisi file antarmuka frontend (HTML, CSS, JS).
   - `index.html`: Layout Dashboard Glassmorphic.
@@ -31,7 +31,7 @@ Arsipkan semua file proyek di atas menjadi satu file `.zip` (misal: `app.zip`).
    - **Application mode**: Pilih `Development` (untuk pengetesan awal) atau `Production` (untuk kecepatan maksimal).
    - **Application root**: Masukkan nama folder tempat kode Anda ditaruh (misal: `monitoring-app`).
    - **Application URL**: Pilih subdomain atau domain utama Anda serta path opsional yang akan digunakan untuk mengakses aplikasi ini.
-   - **Application startup file**: Masukkan nama file startup utama, yaitu `app.js`.
+   - **Application startup file**: Masukkan nama file startup utama, yaitu `server.js`.
 5. Klik tombol **Create** di kanan atas. cPanel akan secara otomatis membuat folder kosong dengan nama yang diisi di *Application root*.
 
 ### Langkah 3: Unggah Berkas Kode ke Server
