@@ -8,9 +8,24 @@ const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
 const xlsx = require('xlsx');
 
+const multer = require('multer');
+const upload = multer({ storage: multer.memoryStorage() });
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET || 'secretse2026';
+
+// Centralized target calculation SQL helper
+function getTargetSql(targetMode) {
+  if (targetMode === 'dinamis') {
+    return 'COALESCE(lr.jml_open + lr.jml_submit + lr.jml_reject + lr.jml_pending + lr.jml_approved, ss.total_muatan)';
+  } else if (targetMode === 'fasih-sm') {
+    return 'COALESCE(NULLIF(ss.total_muatan_fasih, 0), ss.total_muatan)';
+  } else {
+    return 'ss.total_muatan';
+  }
+}
+
 
 app.use(express.json());
 app.use(cookieParser());
@@ -150,6 +165,10 @@ app.get('/api/dashboard/stats', authenticateToken, async (req, res) => {
   try {
     const { role, kecamatan_id } = req.user;
 
+    // Fetch active target mode
+    const [[settingRow]] = await pool.query("SELECT nilai FROM pengaturan WHERE kunci = 'target_mode'");
+    const targetMode = settingRow?.nilai || 'statis';
+
     // Build filter based on PML role limits
     let kecFilterSql = '';
     let pmlKecId = null;
@@ -164,11 +183,18 @@ app.get('/api/dashboard/stats', authenticateToken, async (req, res) => {
       SELECT 
         COUNT(DISTINCT s.id) AS total_sls,
         COUNT(DISTINCT ss.id) AS total_sub_sls,
-        SUM(ss.total_muatan) AS total_muatan
+        SUM(${getTargetSql(targetMode)}) AS total_muatan
       FROM sub_sls ss
       JOIN sls s ON ss.sls_id = s.id
       JOIN desa d ON s.desa_id = d.id
       JOIN kecamatan k ON d.kecamatan_id = k.id
+      LEFT JOIN (
+        SELECT lh1.* FROM laporan_harian lh1
+        JOIN (
+          SELECT sub_sls_id, MAX(tanggal) AS max_date 
+          FROM laporan_harian GROUP BY sub_sls_id
+        ) lh2 ON lh1.sub_sls_id = lh2.sub_sls_id AND lh1.tanggal = lh2.max_date
+      ) lr ON ss.id = lr.sub_sls_id
       WHERE 1=1 ${kecFilterSql}
     `);
 
@@ -238,7 +264,7 @@ app.get('/api/dashboard/stats', authenticateToken, async (req, res) => {
         k.id AS kecamatan_id,
         k.nama_kec,
         tp.target_persen AS target_periode,
-        SUM(ss.total_muatan) AS total_muatan,
+        SUM(${getTargetSql(targetMode)}) AS total_muatan,
         COALESCE(SUM(lr.jml_approved), 0) AS total_approved,
         COALESCE(SUM(lr.jml_submit), 0) AS total_submit,
         COALESCE(SUM(lr.jml_pending), 0) AS total_pending,
@@ -267,7 +293,7 @@ app.get('/api/dashboard/stats', authenticateToken, async (req, res) => {
         s.nama_sls,
         d.nama_desa,
         k.nama_kec,
-        SUM(ss.total_muatan) AS total_muatan,
+        SUM(${getTargetSql(targetMode)}) AS total_muatan,
         COALESCE(SUM(lr.jml_approved), 0) AS total_approved,
         COALESCE(SUM(lr.jml_submit), 0) AS total_submit,
         COALESCE(SUM(lr.jml_pending), 0) AS total_pending
@@ -293,7 +319,7 @@ app.get('/api/dashboard/stats', authenticateToken, async (req, res) => {
       SELECT 
         ss.nama_pml,
         ss.nama_korlap,
-        SUM(ss.total_muatan) AS total_muatan,
+        SUM(${getTargetSql(targetMode)}) AS total_muatan,
         COALESCE(SUM(lr.jml_approved), 0) AS total_approved,
         COUNT(DISTINCT ss.id) AS total_sub_sls,
         SUM(CASE WHEN lr.status = 'selesai_100%' THEN 1 ELSE 0 END) AS completed_sub_sls
@@ -355,6 +381,10 @@ app.get('/api/dashboard/ews', authenticateToken, async (req, res) => {
       kecFilterSql = `AND k.id = ${kecamatan_id}`;
     }
 
+    // Fetch active target mode
+    const [[settingRow]] = await pool.query("SELECT nilai FROM pengaturan WHERE kunci = 'target_mode'");
+    const targetMode = settingRow?.nilai || 'statis';
+
     // Fetch all sub-sls and their latest report to calculate warnings
     const [subSlsRows] = await pool.query(`
       SELECT 
@@ -364,7 +394,7 @@ app.get('/api/dashboard/ews', authenticateToken, async (req, res) => {
         ss.nama_pcl,
         ss.nama_pml,
         ss.nama_korlap,
-        ss.total_muatan,
+        ${getTargetSql(targetMode)} AS total_muatan,
         k.nama_kec,
         d.nama_desa,
         s.nama_sls,
@@ -503,6 +533,10 @@ app.get('/api/laporan', authenticateToken, async (req, res) => {
       filterSql = `AND ss.id IN (SELECT sub_sls_id FROM tugas_pcl WHERE pcl_id = ${userId})`;
     }
 
+    // Fetch active target mode
+    const [[settingRow]] = await pool.query("SELECT nilai FROM pengaturan WHERE kunci = 'target_mode'");
+    const targetMode = settingRow?.nilai || 'statis';
+
     const [reports] = await pool.query(`
       SELECT 
         lh.id,
@@ -517,7 +551,7 @@ app.get('/api/laporan', authenticateToken, async (req, res) => {
         lh.sub_sls_id,
         ss.id_sub_sls,
         ss.nama_sub_sls,
-        ss.total_muatan,
+        ${getTargetSql(targetMode)} AS total_muatan,
         u.nama_lengkap AS pembuat_laporan,
         k.nama_kec,
         d.nama_desa,
@@ -528,6 +562,13 @@ app.get('/api/laporan', authenticateToken, async (req, res) => {
       JOIN desa d ON s.desa_id = d.id
       JOIN kecamatan k ON d.kecamatan_id = k.id
       JOIN user u ON lh.user_id = u.id
+      LEFT JOIN (
+        SELECT lh1.* FROM laporan_harian lh1
+        JOIN (
+          SELECT sub_sls_id, MAX(tanggal) AS max_date 
+          FROM laporan_harian GROUP BY sub_sls_id
+        ) lh2 ON lh1.sub_sls_id = lh2.sub_sls_id AND lh1.tanggal = lh2.max_date
+      ) lr ON ss.id = lr.sub_sls_id
       WHERE 1=1 ${filterSql}
       ORDER BY lh.tanggal DESC, lh.id DESC
       LIMIT 100
@@ -752,6 +793,10 @@ app.get('/api/wilayah/sub-sls', authenticateToken, async (req, res) => {
       filterSql = `AND ss.id IN (SELECT sub_sls_id FROM tugas_pcl WHERE pcl_id = ${userId})`;
     }
 
+    // Fetch active target mode
+    const [[settingRow]] = await pool.query("SELECT nilai FROM pengaturan WHERE kunci = 'target_mode'");
+    const targetMode = settingRow?.nilai || 'statis';
+
     const [rows] = await pool.query(`
       SELECT 
         ss.id,
@@ -762,7 +807,8 @@ app.get('/api/wilayah/sub-sls', authenticateToken, async (req, res) => {
         ss.nama_korlap,
         ss.nama_pml,
         ss.nama_pcl,
-        ss.total_muatan,
+        ${getTargetSql(targetMode)} AS total_muatan,
+        ss.total_muatan_fasih,
         s.nama_sls,
         d.nama_desa,
         k.nama_kec
@@ -770,6 +816,13 @@ app.get('/api/wilayah/sub-sls', authenticateToken, async (req, res) => {
       JOIN sls s ON ss.sls_id = s.id
       JOIN desa d ON s.desa_id = d.id
       JOIN kecamatan k ON d.kecamatan_id = k.id
+      LEFT JOIN (
+        SELECT lh1.* FROM laporan_harian lh1
+        JOIN (
+          SELECT sub_sls_id, MAX(tanggal) AS max_date 
+          FROM laporan_harian GROUP BY sub_sls_id
+        ) lh2 ON lh1.sub_sls_id = lh2.sub_sls_id AND lh1.tanggal = lh2.max_date
+      ) lr ON ss.id = lr.sub_sls_id
       WHERE 1=1 ${filterSql}
       ORDER BY k.kode_kec, d.kode_desa, s.kode_sls, ss.id_sub_sls
     `);
@@ -869,6 +922,10 @@ app.get('/api/export/excel', authenticateToken, async (req, res) => {
       filterSql = `AND k.id = ${kecamatan_id}`;
     }
 
+    // Fetch active target mode
+    const [[settingRow]] = await pool.query("SELECT nilai FROM pengaturan WHERE kunci = 'target_mode'");
+    const targetMode = settingRow?.nilai || 'statis';
+
     // 1. Fetch Summary Data per Sub-SLS
     const [subSlsRows] = await pool.query(`
       SELECT 
@@ -881,7 +938,7 @@ app.get('/api/export/excel', authenticateToken, async (req, res) => {
         ss.nama_korlap AS 'Koordinator Lapangan',
         ss.nama_pml AS 'Pengawas (PML)',
         ss.nama_pcl AS 'Pencacah (PCL)',
-        ss.total_muatan AS 'Target Muatan Usaha',
+        ${getTargetSql(targetMode)} AS 'Target Muatan Usaha',
         COALESCE(lr.jml_open, 0) AS 'Open',
         COALESCE(lr.jml_submit, 0) AS 'Submit',
         COALESCE(lr.jml_reject, 0) AS 'Reject',
@@ -969,6 +1026,87 @@ app.get('/api/export/excel', authenticateToken, async (req, res) => {
     res.setHeader('Content-Disposition', 'attachment; filename=Laporan_Monitoring_SE2026.xlsx');
     res.end(excelBuffer);
 
+  } catch (err) {
+    res.status(500).json({ status: 'error', message: err.message });
+  }
+});
+
+// ==========================================================================
+// Admin settings endpoints for target mode & Excel file uploads
+// ==========================================================================
+
+// Get current active target mode
+app.get('/api/admin/target-mode', authenticateToken, async (req, res) => {
+  try {
+    const [[row]] = await pool.query("SELECT nilai FROM pengaturan WHERE kunci = 'target_mode'");
+    res.json({ status: 'success', targetMode: row?.nilai || 'statis' });
+  } catch (err) {
+    res.status(500).json({ status: 'error', message: err.message });
+  }
+});
+
+// Update target mode
+app.post('/api/admin/target-mode', authenticateToken, authorizeRoles('admin'), async (req, res) => {
+  const { targetMode } = req.body;
+  if (!targetMode || !['statis', 'dinamis', 'fasih-sm'].includes(targetMode)) {
+    return res.status(400).json({ status: 'error', message: 'Mode target tidak valid.' });
+  }
+  try {
+    await pool.query("INSERT INTO pengaturan (kunci, nilai) VALUES ('target_mode', ?) ON DUPLICATE KEY UPDATE nilai = ?", [targetMode, targetMode]);
+    res.json({ status: 'success', message: `Mode target berhasil diubah ke ${targetMode}.` });
+  } catch (err) {
+    res.status(500).json({ status: 'error', message: err.message });
+  }
+});
+
+// Upload and process Rekap_Progress file to update target_muatan_fasih
+app.post('/api/admin/upload-rekap', authenticateToken, authorizeRoles('admin'), upload.single('rekapFile'), async (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ status: 'error', message: 'Tidak ada berkas yang diunggah.' });
+  }
+  try {
+    const workbook = xlsx.read(req.file.buffer, { type: 'buffer' });
+    const sheetName = workbook.SheetNames.find(name => name.includes('Rekap') || name.includes('Pivot'));
+    if (!sheetName) {
+      return res.status(400).json({ status: 'error', message: 'Sheet rekap (Rekap/Pivot) tidak ditemukan di file Excel.' });
+    }
+
+    const worksheet = workbook.Sheets[sheetName];
+    const rawData = xlsx.utils.sheet_to_json(worksheet);
+
+    if (rawData.length === 0) {
+      return res.status(400).json({ status: 'error', message: 'Berkas rekap kosong.' });
+    }
+
+    let updatedCount = 0;
+    const connection = await pool.getConnection();
+    try {
+      await connection.beginTransaction();
+
+      for (const row of rawData) {
+        const smallcode = row.smallcode || row.SMALLCODE || row.Smallcode;
+        const total = row.total || row.TOTAL || row.Total;
+
+        if (smallcode && total !== undefined) {
+          const idSubSls = String(smallcode).trim();
+          const targetFasih = parseInt(total) || 0;
+
+          await connection.query(
+            "UPDATE sub_sls SET total_muatan_fasih = ? WHERE id_sub_sls = ?",
+            [targetFasih, idSubSls]
+          );
+          updatedCount++;
+        }
+      }
+
+      await connection.commit();
+      res.json({ status: 'success', message: `Berhasil memperbarui target untuk ${updatedCount} sub-SLS.` });
+    } catch (err) {
+      await connection.rollback();
+      throw err;
+    } finally {
+      connection.release();
+    }
   } catch (err) {
     res.status(500).json({ status: 'error', message: err.message });
   }

@@ -96,6 +96,16 @@ document.addEventListener('DOMContentLoaded', () => {
   const formTargetSuccess = document.getElementById('form-target-success');
   const formTargetError = document.getElementById('form-target-error');
 
+  // Target Mode & Excel Upload Elements
+  const settingTargetForm = document.getElementById('setting-target-form');
+  const settingTargetMode = document.getElementById('setting-target-mode');
+  const formSettingSuccess = document.getElementById('form-setting-success');
+  const formSettingError = document.getElementById('form-setting-error');
+
+  const uploadRekapForm = document.getElementById('upload-rekap-form');
+  const uploadFileRekap = document.getElementById('upload-file-rekap');
+
+
   // User Management Elements
   const userForm = document.getElementById('user-form');
   const usrId = document.getElementById('usr-id');
@@ -808,6 +818,13 @@ document.addEventListener('DOMContentLoaded', () => {
       // 4. Render Alokasi Table
       renderAlokasiTable(cachedSubSls);
 
+      // 5. Fetch active target mode
+      const resMode = await fetch('/api/admin/target-mode');
+      const dataMode = await resMode.json();
+      if (dataMode.status === 'success') {
+        settingTargetMode.value = dataMode.targetMode;
+      }
+
     } catch (err) {
       console.error(err);
     }
@@ -942,6 +959,85 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (err) {
       formTargetError.textContent = 'Gagal menyimpan target periode.';
       formTargetError.classList.remove('hidden');
+    }
+  });
+
+  // Target Mode Form Submission
+  settingTargetForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    formSettingSuccess.classList.add('hidden');
+    formSettingError.classList.add('hidden');
+
+    const targetMode = settingTargetMode.value;
+
+    try {
+      const res = await fetch('/api/admin/target-mode', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ targetMode })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        formSettingSuccess.textContent = data.message;
+        formSettingSuccess.classList.remove('hidden');
+        // Reload stats
+        loadDashboardStats();
+      } else {
+        formSettingError.textContent = data.message || 'Gagal menyimpan mode target.';
+        formSettingError.classList.remove('hidden');
+      }
+    } catch (err) {
+      formSettingError.textContent = 'Gagal menyimpan mode target.';
+      formSettingError.classList.remove('hidden');
+    }
+  });
+
+  // Excel Upload Form Submission
+  uploadRekapForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    formSettingSuccess.classList.add('hidden');
+    formSettingError.classList.add('hidden');
+
+    const file = uploadFileRekap.files[0];
+    if (!file) {
+      formSettingError.textContent = 'Silakan pilih berkas Excel terlebih dahulu.';
+      formSettingError.classList.remove('hidden');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('rekapFile', file);
+
+    try {
+      const btn = document.getElementById('btn-upload-rekap');
+      const originalBtnText = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = '<span>Memproses Berkas...</span>';
+
+      const res = await fetch('/api/admin/upload-rekap', {
+        method: 'POST',
+        body: formData
+      });
+      const data = await res.json();
+
+      btn.disabled = false;
+      btn.innerHTML = originalBtnText;
+
+      if (res.ok) {
+        formSettingSuccess.textContent = data.message;
+        formSettingSuccess.classList.remove('hidden');
+        uploadRekapForm.reset();
+        
+        // Reload wilayah list & stats
+        loadWilayahTab();
+        loadDashboardStats();
+      } else {
+        formSettingError.textContent = data.message || 'Gagal memproses unggah rekap.';
+        formSettingError.classList.remove('hidden');
+      }
+    } catch (err) {
+      formSettingError.textContent = 'Gagal mengirim berkas rekap.';
+      formSettingError.classList.remove('hidden');
     }
   });
 

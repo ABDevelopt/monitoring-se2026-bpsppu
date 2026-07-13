@@ -106,6 +106,7 @@ async function setupDatabase() {
         nama_pml VARCHAR(100) NULL,
         nama_pcl VARCHAR(100) NULL,
         total_muatan INT DEFAULT 0,
+        total_muatan_fasih INT DEFAULT 0,
         sls_id INT NOT NULL,
         FOREIGN KEY (sls_id) REFERENCES sls(id) ON DELETE CASCADE
       ) ENGINE=InnoDB;
@@ -168,7 +169,15 @@ async function setupDatabase() {
         FOREIGN KEY (kecamatan_id) REFERENCES kecamatan(id) ON DELETE CASCADE
       ) ENGINE=InnoDB;
     `);
-    console.log('  ✅ Tabel `target_periode`\n');
+    console.log('  ✅ Tabel `target_periode`');
+
+    await conn.query(`
+      CREATE TABLE IF NOT EXISTS pengaturan (
+        kunci VARCHAR(50) PRIMARY KEY,
+        nilai VARCHAR(255) NOT NULL
+      ) ENGINE=InnoDB;
+    `);
+    console.log('  ✅ Tabel `pengaturan`\n');
 
     // ========================================================
     // STEP 2: Baca & Parse JSON
@@ -449,6 +458,17 @@ async function setupDatabase() {
     } else {
       console.log('  ℹ️  Target periode sudah ada. Skip.\n');
     }
+
+    // ========================================================
+    // STEP 7: Insert pengaturan default
+    // ========================================================
+    console.log('══════════════════════════════════════════════════');
+    console.log(' STEP 7: Inisialisasi pengaturan default');
+    console.log('══════════════════════════════════════════════════');
+    await conn.query(`
+      INSERT IGNORE INTO pengaturan (kunci, nilai) VALUES ('target_mode', 'statis')
+    `);
+    console.log('  ✅ Pengaturan default target_mode = statis\n');
 
     // ========================================================
     // SUMMARY

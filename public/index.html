@@ -527,43 +527,87 @@
               </div>
             </div>
 
-            <!-- Form Target Periode -->
-            <div class="card form-card">
-              <div class="card-header">
-                <i data-lucide="calendar" class="card-icon icon-purple"></i>
-                <h3>Pengaturan Target Waktu & Periode Selesai</h3>
-              </div>
-              <div class="card-content">
-                <div class="alert alert-success hidden" id="form-target-success"></div>
-                <div class="alert alert-danger hidden" id="form-target-error"></div>
-                
-                <form id="target-form">
-                  <div class="form-group">
-                    <label for="tgt-kecamatan">Kecamatan Target *</label>
-                    <select id="tgt-kecamatan" required>
-                      <option value="">Pilih Kecamatan...</option>
-                    </select>
-                  </div>
-                  <div class="form-group">
-                    <label for="tgt-persen">Target Persentase Selesai (%) *</label>
-                    <input type="number" id="tgt-persen" min="1" max="100" value="100" required>
-                  </div>
-                  <div class="form-row">
-                    <div class="form-group col-6">
-                      <label for="tgt-mulai">Tanggal Mulai *</label>
-                      <input type="date" id="tgt-mulai" required>
+            <!-- Right Column Container -->
+            <div style="display: flex; flex-direction: column; gap: 1.25rem; width: 100%;">
+              <!-- Form Target Periode -->
+              <div class="card form-card">
+                <div class="card-header">
+                  <i data-lucide="calendar" class="card-icon icon-purple"></i>
+                  <h3>Pengaturan Target Waktu & Periode Selesai</h3>
+                </div>
+                <div class="card-content">
+                  <div class="alert alert-success hidden" id="form-target-success"></div>
+                  <div class="alert alert-danger hidden" id="form-target-error"></div>
+                  
+                  <form id="target-form">
+                    <div class="form-group">
+                      <label for="tgt-kecamatan">Kecamatan Target *</label>
+                      <select id="tgt-kecamatan" required>
+                        <option value="">Pilih Kecamatan...</option>
+                      </select>
                     </div>
-                    <div class="form-group col-6">
-                      <label for="tgt-selesai">Tanggal Batas Akhir *</label>
-                      <input type="date" id="tgt-selesai" required>
+                    <div class="form-group">
+                      <label for="tgt-persen">Target Persentase Selesai (%) *</label>
+                      <input type="number" id="tgt-persen" min="1" max="100" value="100" required>
                     </div>
-                  </div>
+                    <div class="form-row">
+                      <div class="form-group col-6">
+                        <label for="tgt-mulai">Tanggal Mulai *</label>
+                        <input type="date" id="tgt-mulai" required>
+                      </div>
+                      <div class="form-group col-6">
+                        <label for="tgt-selesai">Tanggal Batas Akhir *</label>
+                        <input type="date" id="tgt-selesai" required>
+                      </div>
+                    </div>
 
-                  <button type="submit" class="btn btn-primary">
-                    <i data-lucide="save"></i>
-                    <span>Tetapkan Target Periode</span>
-                  </button>
-                </form>
+                    <button type="submit" class="btn btn-primary">
+                      <i data-lucide="save"></i>
+                      <span>Tetapkan Target Periode</span>
+                    </button>
+                  </form>
+                </div>
+              </div>
+
+              <!-- Form Pengaturan Opsi & Upload Target Sensus -->
+              <div class="card form-card">
+                <div class="card-header">
+                  <i data-lucide="sliders" class="card-icon icon-blue"></i>
+                  <h3>Pengaturan Opsi Target & Upload Rekap</h3>
+                </div>
+                <div class="card-content">
+                  <div class="alert alert-success hidden" id="form-setting-success"></div>
+                  <div class="alert alert-danger hidden" id="form-setting-error"></div>
+                  
+                  <form id="setting-target-form">
+                    <div class="form-group">
+                      <label for="setting-target-mode">Mode Target Aktif *</label>
+                      <select id="setting-target-mode" required>
+                        <option value="statis">Statis (Baseline Target)</option>
+                        <option value="dinamis">Dinamis (Jumlah Berdasarkan Laporan)</option>
+                        <option value="fasih-sm">Fasih-SM (Berdasarkan File Upload)</option>
+                      </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="btn-save-setting-target" style="width: 100%;">
+                      <i data-lucide="save"></i>
+                      <span>Simpan Mode Target</span>
+                    </button>
+                  </form>
+
+                  <hr style="margin: 1.5rem 0; border: 0; border-top: 1px solid var(--border);">
+
+                  <form id="upload-rekap-form" enctype="multipart/form-data">
+                    <div class="form-group">
+                      <label for="upload-file-rekap">Upload File Rekap Progress (Fasih-SM) *</label>
+                      <input type="file" id="upload-file-rekap" accept=".xlsx" required style="border: 1px dashed var(--border); padding: 1rem; cursor: pointer;">
+                      <p class="form-help">Pilih berkas Rekap_Progress_*.xlsx untuk memetakan target muatan Fasih-SM.</p>
+                    </div>
+                    <button type="submit" class="btn btn-secondary" id="btn-upload-rekap" style="width: 100%;">
+                      <i data-lucide="upload"></i>
+                      <span>Upload & Proses Berkas</span>
+                    </button>
+                  </form>
+                </div>
               </div>
             </div>
           </div>

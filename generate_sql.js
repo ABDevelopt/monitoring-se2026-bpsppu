@@ -50,6 +50,7 @@ lines.push('-- ====================================================');
 lines.push('DROP TABLE IF EXISTS tugas_pcl;');
 lines.push('DROP TABLE IF EXISTS laporan_harian;');
 lines.push('DROP TABLE IF EXISTS target_periode;');
+lines.push('DROP TABLE IF EXISTS pengaturan;');
 lines.push('DROP TABLE IF EXISTS sub_sls;');
 lines.push('DROP TABLE IF EXISTS sls;');
 lines.push('DROP TABLE IF EXISTS desa;');
@@ -96,6 +97,7 @@ lines.push(`CREATE TABLE IF NOT EXISTS sub_sls (
   nama_pml VARCHAR(100) NULL,
   nama_pcl VARCHAR(100) NULL,
   total_muatan INT DEFAULT 0,
+  total_muatan_fasih INT DEFAULT 0,
   sls_id INT NOT NULL,
   FOREIGN KEY (sls_id) REFERENCES sls(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;`);
@@ -144,6 +146,11 @@ lines.push(`CREATE TABLE IF NOT EXISTS target_periode (
   tanggal_selesai DATE NOT NULL,
   kecamatan_id INT NOT NULL,
   FOREIGN KEY (kecamatan_id) REFERENCES kecamatan(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;`);
+
+lines.push(`CREATE TABLE IF NOT EXISTS pengaturan (
+  kunci VARCHAR(50) PRIMARY KEY,
+  nilai VARCHAR(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;`);
 
 lines.push('');
@@ -287,6 +294,15 @@ const tEnd   = fmt(new Date(today.getTime() + 21 * 86400000));
 for (const kec of data) {
   lines.push(`INSERT IGNORE INTO target_periode (target_persen, tanggal_mulai, tanggal_selesai, kecamatan_id) SELECT 100.00, '${tStart}', '${tEnd}', id FROM kecamatan WHERE kode_kec=${esc(kec.kode_kec)};`);
 }
+lines.push('');
+
+// ----------------------------------------------------------------
+// PENGATURAN DEFAULT
+// ----------------------------------------------------------------
+lines.push('-- ====================================================');
+lines.push('-- PENGATURAN DEFAULT');
+lines.push('-- ====================================================');
+lines.push(`INSERT IGNORE INTO pengaturan (kunci, nilai) VALUES ('target_mode', 'statis');`);
 lines.push('');
 
 // ----------------------------------------------------------------

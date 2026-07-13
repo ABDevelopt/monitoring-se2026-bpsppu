@@ -1,6 +1,6 @@
 -- ====================================================
 -- SQL SETUP: Sensus Ekonomi 2026 - BPS PPU
--- Generated: 2026-06-17T14:49:25.393Z
+-- Generated: 2026-07-13T07:11:36.850Z
 -- ====================================================
 SET FOREIGN_KEY_CHECKS=0;
 SET NAMES utf8mb4;
@@ -11,6 +11,7 @@ SET NAMES utf8mb4;
 DROP TABLE IF EXISTS tugas_pcl;
 DROP TABLE IF EXISTS laporan_harian;
 DROP TABLE IF EXISTS target_periode;
+DROP TABLE IF EXISTS pengaturan;
 DROP TABLE IF EXISTS sub_sls;
 DROP TABLE IF EXISTS sls;
 DROP TABLE IF EXISTS desa;
@@ -49,6 +50,7 @@ CREATE TABLE IF NOT EXISTS sub_sls (
   nama_pml VARCHAR(100) NULL,
   nama_pcl VARCHAR(100) NULL,
   total_muatan INT DEFAULT 0,
+  total_muatan_fasih INT DEFAULT 0,
   sls_id INT NOT NULL,
   FOREIGN KEY (sls_id) REFERENCES sls(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -93,6 +95,10 @@ CREATE TABLE IF NOT EXISTS target_periode (
   tanggal_selesai DATE NOT NULL,
   kecamatan_id INT NOT NULL,
   FOREIGN KEY (kecamatan_id) REFERENCES kecamatan(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE IF NOT EXISTS pengaturan (
+  kunci VARCHAR(50) PRIMARY KEY,
+  nilai VARCHAR(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ====================================================
@@ -3271,10 +3277,15 @@ INSERT IGNORE INTO tugas_pcl (pcl_id, sub_sls_id) SELECT u.id, s.id FROM `user` 
 -- ====================================================
 -- TARGET PERIODE (default 100%, periode survei)
 -- ====================================================
-INSERT IGNORE INTO target_periode (target_persen, tanggal_mulai, tanggal_selesai, kecamatan_id) SELECT 100.00, '2026-06-10', '2026-07-08', id FROM kecamatan WHERE kode_kec='01';
-INSERT IGNORE INTO target_periode (target_persen, tanggal_mulai, tanggal_selesai, kecamatan_id) SELECT 100.00, '2026-06-10', '2026-07-08', id FROM kecamatan WHERE kode_kec='02';
-INSERT IGNORE INTO target_periode (target_persen, tanggal_mulai, tanggal_selesai, kecamatan_id) SELECT 100.00, '2026-06-10', '2026-07-08', id FROM kecamatan WHERE kode_kec='03';
-INSERT IGNORE INTO target_periode (target_persen, tanggal_mulai, tanggal_selesai, kecamatan_id) SELECT 100.00, '2026-06-10', '2026-07-08', id FROM kecamatan WHERE kode_kec='04';
+INSERT IGNORE INTO target_periode (target_persen, tanggal_mulai, tanggal_selesai, kecamatan_id) SELECT 100.00, '2026-07-06', '2026-08-03', id FROM kecamatan WHERE kode_kec='01';
+INSERT IGNORE INTO target_periode (target_persen, tanggal_mulai, tanggal_selesai, kecamatan_id) SELECT 100.00, '2026-07-06', '2026-08-03', id FROM kecamatan WHERE kode_kec='02';
+INSERT IGNORE INTO target_periode (target_persen, tanggal_mulai, tanggal_selesai, kecamatan_id) SELECT 100.00, '2026-07-06', '2026-08-03', id FROM kecamatan WHERE kode_kec='03';
+INSERT IGNORE INTO target_periode (target_persen, tanggal_mulai, tanggal_selesai, kecamatan_id) SELECT 100.00, '2026-07-06', '2026-08-03', id FROM kecamatan WHERE kode_kec='04';
+
+-- ====================================================
+-- PENGATURAN DEFAULT
+-- ====================================================
+INSERT IGNORE INTO pengaturan (kunci, nilai) VALUES ('target_mode', 'statis');
 
 SET FOREIGN_KEY_CHECKS=1;
 -- ====================================================
